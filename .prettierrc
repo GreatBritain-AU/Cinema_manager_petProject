@@ -1,0 +1,18 @@
+{
+  "plugins": ["@ianvs/prettier-plugin-sort-imports"],
+  "importOrder": [
+    "<BUILT_IN_MODULES>",
+    "",
+    "^react",
+    "",
+    "<THIRD_PARTY_MODULES>",
+    "",
+    "^(\\./|\\../)+[a-z][\\d\\D]*(.js)?(?<!css|scss|sass)$",
+    "",
+    "^(\\./|\\../)+[A-Z][\\d\\D]*(.jsx)?(?<!css|scss|sass)$",
+    "",
+    "\\.(css|scss|sass)$",
+    ""
+  ],
+  "importOrderSafeSideEffects": ["\\.(css|scss|sass)$"]
+}
