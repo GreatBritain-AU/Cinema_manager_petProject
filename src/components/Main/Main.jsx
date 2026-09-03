@@ -30,7 +30,7 @@ export default function Main() {
     <Box
       sx={{
         display: "flex",
-        minHeight: "calc(100vh - 64px)",
+        flex: 1,
         backgroundColor: "#3d3d3d",
       }}
     >
@@ -40,15 +40,15 @@ export default function Main() {
         sx={{
           width: 240,
           flexShrink: 0,
+          marginLeft: "15px",
           "& .MuiDrawer-paper": {
-            position: "relative",
+            position: "sticky",
             width: 240,
             backgroundColor: "#2d2d2d",
             color: "#fff",
             borderRight: "none",
             boxSizing: "border-box",
             top: 115,
-            left: 15,
             height: "auto",
             boxShadow: "none",
             borderRadius: 2,
@@ -99,10 +99,6 @@ export default function Main() {
           })}
         </List>
       </Drawer>
-
-      <Box sx={{ flex: 1, p: 3, color: "#fff" }}>
-        <h2>{selected}</h2>
-      </Box>
     </Box>
   );
 }
