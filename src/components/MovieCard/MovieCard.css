@@ -1,0 +1,158 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background: #12181b;
+  color: #ffffff;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.movie-details {
+  position: relative;
+  width: min(950px, 92%); /* Увеличена ширина карточки */
+  margin: 0 auto;
+  padding: 30px 40px;
+  background: #1e262c;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+.movie-title {
+  margin: 0 0 25px;
+  text-align: center;
+  font-size: 30px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.movie-content {
+  display: flex;
+  align-items: center;
+  gap: 35px;
+}
+
+.movie-poster {
+  width: 220px;
+  height: 300px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: #2a343d;
+  border: 1px solid #3a4752;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.movie-poster:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.5);
+}
+
+.movie-info {
+  flex: 1;
+}
+
+.movie-info h2 {
+  margin: 0 0 18px;
+  font-size: 22px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.movie-info p {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin: 0 0 12px;
+  padding: 12px 16px;
+  background: #252e35;
+  border-radius: 6px;
+  color: #ffffff;
+  font-size: 15px;
+  border-left: 3px solid #ff4d4d; /* Красная полоска */
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+.movie-info p:hover {
+  background: #2c3740;
+  transform: translateX(4px);
+}
+
+.movie-info p span {
+  min-width: 85px;
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.movie-info p:last-child {
+  color: #ffffff;
+}
+
+@media (max-width: 800px) {
+  .movie-details {
+    padding: 20px;
+  }
+
+  .movie-content {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .movie-poster {
+    width: 180px;
+    height: 250px;
+  }
+
+  .movie-info {
+    width: 100%;
+  }
+}
+
+@media (max-width: 500px) {
+  .movie-details {
+    width: 94%;
+    padding: 15px;
+    border-radius: 10px;
+  }
+
+  .movie-title {
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+
+  .movie-poster {
+    width: 100%;
+    max-width: 200px;
+    height: 270px;
+  }
+
+  .movie-info h2 {
+    font-size: 18px;
+  }
+
+  .movie-info p {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .movie-info p span {
+    min-width: auto;
+  }
+}

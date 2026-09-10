@@ -1,16 +1,15 @@
+import Header from "./components/Header/Header.jsx";
+import MovieCard from "./components/MovieCard/MovieCard.jsx";
 
-
-import Header from './components/Header/Header.jsx'
-
-import './App.css'
+import "./App.css";
 
 function App() {
-
   return (
     <>
-      <Header/>
+      <Header />
+      <MovieCard />
     </>
-  )
+  );
 }
 
-export default App
+export default App;
