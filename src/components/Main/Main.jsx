@@ -1,4 +1,11 @@
 import { useState } from "react";
+
+import BusinessOutlinedIcon from "@mui/icons-material/BusinessOutlined";
+import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
+import MovieOutlinedIcon from "@mui/icons-material/MovieOutlined";
+import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
+import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
+import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import Box from "@mui/material/Box";
 import Drawer from "@mui/material/Drawer";
 import List from "@mui/material/List";
@@ -7,12 +14,11 @@ import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 
-import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
-import MovieOutlinedIcon from "@mui/icons-material/MovieOutlined";
-import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
-import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
-import BusinessOutlinedIcon from "@mui/icons-material/BusinessOutlined";
-import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
+import ActorsList from "../Lists/ActorsList/ActorsList.jsx";
+import DirectorsList from "../Lists/DirectorsList/DirectorsList.jsx";
+import MoviesList from "../Lists/MoviesList/MoviesList.jsx";
+import ServicesList from "../Lists/ServicesList/ServicesList.jsx";
+import StudiosList from "../Lists/StudiosList/StudiosList.jsx";
 
 const menuItems = [
   { label: "Home", icon: <HomeOutlinedIcon /> },
@@ -32,6 +38,9 @@ export default function Main() {
         display: "flex",
         flex: 1,
         backgroundColor: "#3d3d3d",
+        pt: "120px",
+        pb: 4,
+        px: 3,
       }}
     >
       <Drawer
@@ -99,6 +108,22 @@ export default function Main() {
           })}
         </List>
       </Drawer>
+
+      <Box
+        sx={{
+          flexGrow: 1,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "flex-start",
+          pr: "240px",
+        }}
+      >
+        {selected === "Actors" && <ActorsList />}
+        {selected === "Directors" && <DirectorsList />}
+        {selected === "Movies" && <MoviesList />}
+        {selected === "Studios" && <StudiosList />}
+        {selected === "Service" && <ServicesList />}
+      </Box>
     </Box>
   );
 }
