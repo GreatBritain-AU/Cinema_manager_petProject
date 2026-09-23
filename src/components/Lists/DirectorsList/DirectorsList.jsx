@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
-import { Box, Button, Pagination, Typography } from "@mui/material";
+import { Box, Button, Collapse, Pagination, Typography } from "@mui/material";
 
 import ListRow from "../../Common/ListRow";
 
@@ -188,14 +188,42 @@ const initialDirectors = [
   },
 ];
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 8;
+const UNDO_TIMEOUT_MS = 5000;
+const COLLAPSE_ANIMATION_MS = 300;
 
 export const DirectorsList = () => {
   const [directors, setDirectors] = useState(initialDirectors);
   const [page, setPage] = useState(1);
+  const [deletingIds, setDeletingIds] = useState([]);
+  const [collapsingIds, setCollapsingIds] = useState([]);
 
-  const handleDelete = (id) => {
-    setDirectors((prev) => prev.filter((director) => director.id !== id));
+  const timersRef = useRef({});
+
+  const handleDeleteRequest = (id) => {
+    setDeletingIds((prev) => [...prev, id]);
+
+    timersRef.current[id] = setTimeout(() => {
+      setCollapsingIds((prev) => [...prev, id]);
+
+      setTimeout(() => {
+        setDirectors((prevDirectors) =>
+          prevDirectors.filter((director) => director.id !== id),
+        );
+        setDeletingIds((prev) => prev.filter((item) => item !== id));
+        setCollapsingIds((prev) => prev.filter((item) => item !== id));
+        delete timersRef.current[id];
+      }, COLLAPSE_ANIMATION_MS);
+    }, UNDO_TIMEOUT_MS);
+  };
+
+  const handleUndoDelete = (id) => {
+    if (timersRef.current[id]) {
+      clearTimeout(timersRef.current[id]);
+      delete timersRef.current[id];
+    }
+    setDeletingIds((prev) => prev.filter((item) => item !== id));
+    setCollapsingIds((prev) => prev.filter((item) => item !== id));
   };
 
   const handlePageChange = (event, value) => {
@@ -261,14 +289,23 @@ export const DirectorsList = () => {
       <Box sx={{ display: "flex", flexDirection: "column", gap: "10px" }}>
         {currentDirectors.length > 0 ? (
           currentDirectors.map((director) => (
-            <ListRow
+            <Collapse
               key={director.id}
-              imageSrc={director.photo}
-              title={director.full_name}
-              subtitle={director.country}
-              onEdit={() => console.log("Edit", director.id)}
-              onDelete={() => handleDelete(director.id)}
-            />
+              in={!collapsingIds.includes(director.id)}
+              timeout={COLLAPSE_ANIMATION_MS}
+              unmountOnExit
+            >
+              <ListRow
+                imageSrc={director.photo}
+                title={director.full_name}
+                subtitle={director.country}
+                isDeleting={deletingIds.includes(director.id)}
+                duration={UNDO_TIMEOUT_MS}
+                onEdit={() => console.log("Edit", director.id)}
+                onDelete={() => handleDeleteRequest(director.id)}
+                onUndo={() => handleUndoDelete(director.id)}
+              />
+            </Collapse>
           ))
         ) : (
           <Typography sx={{ color: "#b0bec5", textAlign: "center", py: 4 }}>

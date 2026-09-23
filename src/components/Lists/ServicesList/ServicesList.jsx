@@ -1,7 +1,15 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 
 import AddIcon from "@mui/icons-material/Add";
-import { Box, Button, Pagination, Tab, Tabs, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Collapse,
+  Pagination,
+  Tab,
+  Tabs,
+  Typography,
+} from "@mui/material";
 
 import ListRow from "../../Common/ListRow";
 
@@ -55,7 +63,9 @@ const initialLocations = [
   { id: "l7", title: "London, United Kingdom" },
 ];
 
-const ITEMS_PER_PAGE = 5;
+const ITEMS_PER_PAGE = 7;
+const UNDO_TIMEOUT_MS = 5000;
+const COLLAPSE_ANIMATION_MS = 300;
 
 export const ServicesList = () => {
   const [tabIndex, setTabIndex] = useState(0);
@@ -65,18 +75,44 @@ export const ServicesList = () => {
   const [countries, setCountries] = useState(initialCountries);
   const [locations, setLocations] = useState(initialLocations);
 
+  const [deletingIds, setDeletingIds] = useState([]);
+  const [collapsingIds, setCollapsingIds] = useState([]);
+
+  const timersRef = useRef({});
+
   const handleTabChange = (event, newValue) => {
     setTabIndex(newValue);
     setPage(1);
   };
 
-  const handleDelete = (id) => {
-    if (tabIndex === 0)
-      setGenres((prev) => prev.filter((item) => item.id !== id));
-    if (tabIndex === 1)
-      setCountries((prev) => prev.filter((item) => item.id !== id));
-    if (tabIndex === 2)
-      setLocations((prev) => prev.filter((item) => item.id !== id));
+  const handleDeleteRequest = (id) => {
+    setDeletingIds((prev) => [...prev, id]);
+
+    timersRef.current[id] = setTimeout(() => {
+      setCollapsingIds((prev) => [...prev, id]);
+
+      setTimeout(() => {
+        if (tabIndex === 0)
+          setGenres((prev) => prev.filter((item) => item.id !== id));
+        if (tabIndex === 1)
+          setCountries((prev) => prev.filter((item) => item.id !== id));
+        if (tabIndex === 2)
+          setLocations((prev) => prev.filter((item) => item.id !== id));
+
+        setDeletingIds((prev) => prev.filter((item) => item !== id));
+        setCollapsingIds((prev) => prev.filter((item) => item !== id));
+        delete timersRef.current[id];
+      }, COLLAPSE_ANIMATION_MS);
+    }, UNDO_TIMEOUT_MS);
+  };
+
+  const handleUndoDelete = (id) => {
+    if (timersRef.current[id]) {
+      clearTimeout(timersRef.current[id]);
+      delete timersRef.current[id];
+    }
+    setDeletingIds((prev) => prev.filter((item) => item !== id));
+    setCollapsingIds((prev) => prev.filter((item) => item !== id));
   };
 
   const getCurrentList = () => {
@@ -191,12 +227,21 @@ export const ServicesList = () => {
       <Box sx={{ display: "flex", flexDirection: "column", gap: "10px" }}>
         {paginatedList.length > 0 ? (
           paginatedList.map((item) => (
-            <ListRow
+            <Collapse
               key={item.id}
-              title={item.title}
-              onEdit={() => console.log("Edit", item.id)}
-              onDelete={() => handleDelete(item.id)}
-            />
+              in={!collapsingIds.includes(item.id)}
+              timeout={COLLAPSE_ANIMATION_MS}
+              unmountOnExit
+            >
+              <ListRow
+                title={item.title}
+                isDeleting={deletingIds.includes(item.id)}
+                duration={UNDO_TIMEOUT_MS}
+                onEdit={() => console.log("Edit", item.id)}
+                onDelete={() => handleDeleteRequest(item.id)}
+                onUndo={() => handleUndoDelete(item.id)}
+              />
+            </Collapse>
           ))
         ) : (
           <Typography sx={{ color: "#b0bec5", textAlign: "center", py: 4 }}>

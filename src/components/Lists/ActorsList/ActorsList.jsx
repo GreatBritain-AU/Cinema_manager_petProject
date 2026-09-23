@@ -1,58 +1,66 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
-import { Box, Button, Pagination, Typography } from "@mui/material";
+import { Box, Button, Collapse, Pagination, Typography } from "@mui/material";
 
 import ListRow from "../../Common/ListRow";
+
+const actorPhotos = import.meta.glob(
+  "../../../assets/images/actors/*.{png,jpg,jpeg,svg,webp}",
+  { eager: true, as: "url" },
+);
+
+const getActorPhoto = (fileName) =>
+  actorPhotos[`../../../assets/images/actors/${fileName}`];
 
 const initialActors = [
   {
     id: "1",
     full_name: "Leonardo DiCaprio",
     country: "United States",
-    photo: "/images/dicaprio.jpg",
+    photo: getActorPhoto("dicaprio.jpg"),
   },
   {
     id: "2",
     full_name: "Brad Pitt",
     country: "United States",
-    photo: "/images/pitt.jpg",
+    photo: getActorPhoto("pitt.jpg"),
   },
   {
     id: "3",
     full_name: "Tom Hanks",
     country: "United States",
-    photo: "/images/hanks.jpg",
+    photo: getActorPhoto("hanks.jpg"),
   },
   {
     id: "4",
     full_name: "Keanu Reeves",
     country: "Canada",
-    photo: "/images/reeves.jpg",
+    photo: getActorPhoto("reeves.jpg"),
   },
   {
     id: "5",
     full_name: "Robert Downey Jr.",
     country: "United States",
-    photo: "/images/downey.jpg",
+    photo: getActorPhoto("downey.jpg"),
   },
   {
     id: "6",
     full_name: "Christian Bale",
     country: "United Kingdom",
-    photo: "/images/bale.jpg",
+    photo: getActorPhoto("bale.jpg"),
   },
   {
     id: "7",
     full_name: "Hugh Jackman",
     country: "Australia",
-    photo: "/images/jackman.jpg",
+    photo: getActorPhoto("jackman.jpg"),
   },
   {
     id: "8",
     full_name: "Ryan Gosling",
     country: "Canada",
-    photo: "/images/gosling.jpg",
+    photo: getActorPhoto("gosling.jpg"),
   },
   {
     id: "9",
@@ -188,14 +196,42 @@ const initialActors = [
   },
 ];
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 8;
+const UNDO_TIMEOUT_MS = 5000;
+const COLLAPSE_ANIMATION_MS = 300;
 
 export const ActorsList = () => {
   const [actors, setActors] = useState(initialActors);
   const [page, setPage] = useState(1);
+  const [deletingIds, setDeletingIds] = useState([]);
+  const [collapsingIds, setCollapsingIds] = useState([]);
 
-  const handleDelete = (id) => {
-    setActors((prevActors) => prevActors.filter((actor) => actor.id !== id));
+  const timersRef = useRef({});
+
+  const handleDeleteRequest = (id) => {
+    setDeletingIds((prev) => [...prev, id]);
+
+    timersRef.current[id] = setTimeout(() => {
+      setCollapsingIds((prev) => [...prev, id]);
+
+      setTimeout(() => {
+        setActors((prevActors) =>
+          prevActors.filter((actor) => actor.id !== id),
+        );
+        setDeletingIds((prev) => prev.filter((item) => item !== id));
+        setCollapsingIds((prev) => prev.filter((item) => item !== id));
+        delete timersRef.current[id];
+      }, COLLAPSE_ANIMATION_MS);
+    }, UNDO_TIMEOUT_MS);
+  };
+
+  const handleUndoDelete = (id) => {
+    if (timersRef.current[id]) {
+      clearTimeout(timersRef.current[id]);
+      delete timersRef.current[id];
+    }
+    setDeletingIds((prev) => prev.filter((item) => item !== id));
+    setCollapsingIds((prev) => prev.filter((item) => item !== id));
   };
 
   const handlePageChange = (event, value) => {
@@ -258,14 +294,23 @@ export const ActorsList = () => {
       <Box sx={{ display: "flex", flexDirection: "column", gap: "10px" }}>
         {currentActors.length > 0 ? (
           currentActors.map((actor) => (
-            <ListRow
+            <Collapse
               key={actor.id}
-              imageSrc={actor.photo}
-              title={actor.full_name}
-              subtitle={actor.country}
-              onEdit={() => console.log("Edit", actor.id)}
-              onDelete={() => handleDelete(actor.id)}
-            />
+              in={!collapsingIds.includes(actor.id)}
+              timeout={COLLAPSE_ANIMATION_MS}
+              unmountOnExit
+            >
+              <ListRow
+                imageSrc={actor.photo}
+                title={actor.full_name}
+                subtitle={actor.country}
+                isDeleting={deletingIds.includes(actor.id)}
+                duration={UNDO_TIMEOUT_MS}
+                onEdit={() => console.log("Edit", actor.id)}
+                onDelete={() => handleDeleteRequest(actor.id)}
+                onUndo={() => handleUndoDelete(actor.id)}
+              />
+            </Collapse>
           ))
         ) : (
           <Typography sx={{ color: "#b0bec5", textAlign: "center", py: 4 }}>

@@ -1,9 +1,17 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 
 import MovieIcon from "@mui/icons-material/Movie";
-import { Box, Button, Pagination, Typography } from "@mui/material";
+import { Box, Button, Collapse, Pagination, Typography } from "@mui/material";
 
 import ListRow from "../../Common/ListRow";
+
+const moviePosters = import.meta.glob(
+  "../../../assets/images/movies/*.{png,jpg,jpeg,svg}",
+  { eager: true, as: "url" },
+);
+
+const getPoster = (fileName) =>
+  moviePosters[`../../../assets/images/movies/${fileName}`];
 
 const initialMovies = [
   // 2000
@@ -12,14 +20,14 @@ const initialMovies = [
     title: "Gladiator",
     year: "2000",
     genre: "Action, Drama",
-    poster: "/images/gladiator.jpg",
+    poster: getPoster("gladiator.jpg"),
   },
   {
     id: "2",
     title: "Memento",
     year: "2000",
     genre: "Mystery, Thriller",
-    poster: "/images/memento.jpg",
+    poster: getPoster("memento.jpg"),
   },
   // 2001
   {
@@ -27,14 +35,14 @@ const initialMovies = [
     title: "The Lord of the Rings: The Fellowship of the Ring",
     year: "2001",
     genre: "Fantasy, Adventure",
-    poster: "/images/lotr1.jpg",
+    poster: getPoster("lotr1.jpg"),
   },
   {
     id: "4",
     title: "Spirited Away",
     year: "2001",
     genre: "Animation, Adventure",
-    poster: "/images/spirited.jpg",
+    poster: getPoster("spirited.jpg"),
   },
   // 2002
   {
@@ -42,14 +50,14 @@ const initialMovies = [
     title: "The Lord of the Rings: The Two Towers",
     year: "2002",
     genre: "Fantasy, Adventure",
-    poster: "/images/lotr2.jpg",
+    poster: getPoster("lotr2.jpg"),
   },
   {
     id: "6",
     title: "Catch Me If You Can",
     year: "2002",
     genre: "Biography, Crime",
-    poster: "/images/catchme.jpg",
+    poster: getPoster("catchme.jpg"),
   },
   // 2003
   {
@@ -57,7 +65,7 @@ const initialMovies = [
     title: "The Lord of the Rings: The Return of the King",
     year: "2003",
     genre: "Fantasy, Adventure",
-    poster: "/images/lotr3.jpg",
+    poster: getPoster("lotr3.jpg"),
   },
   {
     id: "8",
@@ -413,14 +421,42 @@ const initialMovies = [
   },
 ];
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 7;
+const UNDO_TIMEOUT_MS = 5000;
+const COLLAPSE_ANIMATION_MS = 300;
 
 export const MoviesList = () => {
   const [movies, setMovies] = useState(initialMovies);
   const [page, setPage] = useState(1);
+  const [deletingIds, setDeletingIds] = useState([]);
+  const [collapsingIds, setCollapsingIds] = useState([]);
 
-  const handleDelete = (id) => {
-    setMovies((prev) => prev.filter((movie) => movie.id !== id));
+  const timersRef = useRef({});
+
+  const handleDeleteRequest = (id) => {
+    setDeletingIds((prev) => [...prev, id]);
+
+    timersRef.current[id] = setTimeout(() => {
+      setCollapsingIds((prev) => [...prev, id]);
+
+      setTimeout(() => {
+        setMovies((prevMovies) =>
+          prevMovies.filter((movie) => movie.id !== id),
+        );
+        setDeletingIds((prev) => prev.filter((item) => item !== id));
+        setCollapsingIds((prev) => prev.filter((item) => item !== id));
+        delete timersRef.current[id];
+      }, COLLAPSE_ANIMATION_MS);
+    }, UNDO_TIMEOUT_MS);
+  };
+
+  const handleUndoDelete = (id) => {
+    if (timersRef.current[id]) {
+      clearTimeout(timersRef.current[id]);
+      delete timersRef.current[id];
+    }
+    setDeletingIds((prev) => prev.filter((item) => item !== id));
+    setCollapsingIds((prev) => prev.filter((item) => item !== id));
   };
 
   const handlePageChange = (event, value) => {
@@ -483,14 +519,24 @@ export const MoviesList = () => {
       <Box sx={{ display: "flex", flexDirection: "column", gap: "10px" }}>
         {currentMovies.length > 0 ? (
           currentMovies.map((movie) => (
-            <ListRow
+            <Collapse
               key={movie.id}
-              imageSrc={movie.poster}
-              title={movie.title}
-              subtitle={`${movie.year} • ${movie.genre}`}
-              onEdit={() => console.log("Edit", movie.id)}
-              onDelete={() => handleDelete(movie.id)}
-            />
+              in={!collapsingIds.includes(movie.id)}
+              timeout={COLLAPSE_ANIMATION_MS}
+              unmountOnExit
+            >
+              <ListRow
+                imageSrc={movie.poster}
+                title={movie.title}
+                subtitle={`${movie.year} • ${movie.genre}`}
+                isPoster={true} // Передаем флаг, что это прямоугольный постер
+                isDeleting={deletingIds.includes(movie.id)}
+                duration={UNDO_TIMEOUT_MS}
+                onEdit={() => console.log("Edit", movie.id)}
+                onDelete={() => handleDeleteRequest(movie.id)}
+                onUndo={() => handleUndoDelete(movie.id)}
+              />
+            </Collapse>
           ))
         ) : (
           <Typography sx={{ color: "#b0bec5", textAlign: "center", py: 4 }}>

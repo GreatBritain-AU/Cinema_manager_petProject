@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 
 import DomainIcon from "@mui/icons-material/Domain";
-import { Box, Button, Pagination, Typography } from "@mui/material";
+import { Box, Button, Collapse, Pagination, Typography } from "@mui/material";
 
 import ListRow from "../../Common/ListRow";
 
@@ -98,14 +98,42 @@ const initialStudios = [
   },
 ];
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 8;
+const UNDO_TIMEOUT_MS = 5000;
+const COLLAPSE_ANIMATION_MS = 300;
 
 export const StudiosList = () => {
   const [studios, setStudios] = useState(initialStudios);
   const [page, setPage] = useState(1);
+  const [deletingIds, setDeletingIds] = useState([]);
+  const [collapsingIds, setCollapsingIds] = useState([]);
 
-  const handleDelete = (id) => {
-    setStudios((prev) => prev.filter((studio) => studio.id !== id));
+  const timersRef = useRef({});
+
+  const handleDeleteRequest = (id) => {
+    setDeletingIds((prev) => [...prev, id]);
+
+    timersRef.current[id] = setTimeout(() => {
+      setCollapsingIds((prev) => [...prev, id]);
+
+      setTimeout(() => {
+        setStudios((prevStudios) =>
+          prevStudios.filter((studio) => studio.id !== id),
+        );
+        setDeletingIds((prev) => prev.filter((item) => item !== id));
+        setCollapsingIds((prev) => prev.filter((item) => item !== id));
+        delete timersRef.current[id];
+      }, COLLAPSE_ANIMATION_MS);
+    }, UNDO_TIMEOUT_MS);
+  };
+
+  const handleUndoDelete = (id) => {
+    if (timersRef.current[id]) {
+      clearTimeout(timersRef.current[id]);
+      delete timersRef.current[id];
+    }
+    setDeletingIds((prev) => prev.filter((item) => item !== id));
+    setCollapsingIds((prev) => prev.filter((item) => item !== id));
   };
 
   const handlePageChange = (event, value) => {
@@ -168,14 +196,23 @@ export const StudiosList = () => {
       <Box sx={{ display: "flex", flexDirection: "column", gap: "10px" }}>
         {currentStudios.length > 0 ? (
           currentStudios.map((studio) => (
-            <ListRow
+            <Collapse
               key={studio.id}
-              imageSrc={studio.logo}
-              title={studio.title}
-              subtitle={studio.location}
-              onEdit={() => console.log("Edit", studio.id)}
-              onDelete={() => handleDelete(studio.id)}
-            />
+              in={!collapsingIds.includes(studio.id)}
+              timeout={COLLAPSE_ANIMATION_MS}
+              unmountOnExit
+            >
+              <ListRow
+                imageSrc={studio.logo}
+                title={studio.title}
+                subtitle={studio.location}
+                isDeleting={deletingIds.includes(studio.id)}
+                duration={UNDO_TIMEOUT_MS}
+                onEdit={() => console.log("Edit", studio.id)}
+                onDelete={() => handleDeleteRequest(studio.id)}
+                onUndo={() => handleUndoDelete(studio.id)}
+              />
+            </Collapse>
           ))
         ) : (
           <Typography sx={{ color: "#b0bec5", textAlign: "center", py: 4 }}>
