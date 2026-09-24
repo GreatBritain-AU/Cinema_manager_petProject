@@ -1,9 +1,12 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 import MovieIcon from "@mui/icons-material/Movie";
 import { Box, Button, Collapse, Pagination, Typography } from "@mui/material";
 
+import { fetchMovieDetails } from "../../../services/tmdb";
+
 import ListRow from "../../Common/ListRow";
+import MovieCard from "./MovieCard";
 
 const moviePosters = import.meta.glob(
   "../../../assets/images/movies/*.{png,jpg,jpeg,svg}",
@@ -425,8 +428,47 @@ const ITEMS_PER_PAGE = 7;
 const UNDO_TIMEOUT_MS = 5000;
 const COLLAPSE_ANIMATION_MS = 300;
 
+// Обертка для строки фильма с динамическим фетчем постера из TMDB
+const MovieRowItem = ({ movie, isDeleting, onDelete, onUndo, onSelect }) => {
+  const [posterUrl, setPosterUrl] = useState(movie.poster || null);
+
+  useEffect(() => {
+    // Если постер не передан локально или является битой строкой — ищем через TMDB
+    let isMounted = true;
+    fetchMovieDetails(movie.title, movie.year).then((data) => {
+      if (isMounted && data?.poster) {
+        setPosterUrl(data.poster);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [movie.title, movie.year]);
+
+  return (
+    <Box onClick={onSelect} sx={{ cursor: "pointer" }}>
+      <ListRow
+        imageSrc={posterUrl}
+        title={movie.title}
+        subtitle={`${movie.year} • ${movie.genre}`}
+        isPoster={true}
+        isDeleting={isDeleting}
+        duration={UNDO_TIMEOUT_MS}
+        onEdit={(e) => {
+          e?.stopPropagation();
+          console.log("Edit", movie.id);
+        }}
+        onDelete={onDelete}
+        onUndo={onUndo}
+      />
+    </Box>
+  );
+};
+
 export const MoviesList = () => {
   const [movies, setMovies] = useState(initialMovies);
+  const [selectedMovie, setSelectedMovie] = useState(null);
   const [page, setPage] = useState(1);
   const [deletingIds, setDeletingIds] = useState([]);
   const [collapsingIds, setCollapsingIds] = useState([]);
@@ -434,8 +476,6 @@ export const MoviesList = () => {
   const timersRef = useRef({});
 
   const handleDeleteRequest = (id) => {
-    setDeletingIds((prev) => [...prev, id]);
-
     timersRef.current[id] = setTimeout(() => {
       setCollapsingIds((prev) => [...prev, id]);
 
@@ -448,6 +488,8 @@ export const MoviesList = () => {
         delete timersRef.current[id];
       }, COLLAPSE_ANIMATION_MS);
     }, UNDO_TIMEOUT_MS);
+
+    setDeletingIds((prev) => [...prev, id]);
   };
 
   const handleUndoDelete = (id) => {
@@ -463,6 +505,17 @@ export const MoviesList = () => {
     setPage(value);
   };
 
+  if (selectedMovie) {
+    return (
+      <Box sx={{ width: "100%" }}>
+        <MovieCard
+          movie={selectedMovie}
+          onBack={() => setSelectedMovie(null)}
+        />
+      </Box>
+    );
+  }
+
   const totalPages = Math.ceil(movies.length / ITEMS_PER_PAGE);
   const startIndex = (page - 1) * ITEMS_PER_PAGE;
   const currentMovies = movies.slice(startIndex, startIndex + ITEMS_PER_PAGE);
@@ -477,6 +530,7 @@ export const MoviesList = () => {
         padding: "24px 28px",
         boxSizing: "border-box",
         boxShadow: "0 4px 20px rgba(0,0,0,0.25)",
+        margin: "0 auto",
       }}
     >
       <Box
@@ -525,16 +579,18 @@ export const MoviesList = () => {
               timeout={COLLAPSE_ANIMATION_MS}
               unmountOnExit
             >
-              <ListRow
-                imageSrc={movie.poster}
-                title={movie.title}
-                subtitle={`${movie.year} • ${movie.genre}`}
-                isPoster={true} // Передаем флаг, что это прямоугольный постер
+              <MovieRowItem
+                movie={movie}
                 isDeleting={deletingIds.includes(movie.id)}
-                duration={UNDO_TIMEOUT_MS}
-                onEdit={() => console.log("Edit", movie.id)}
-                onDelete={() => handleDeleteRequest(movie.id)}
-                onUndo={() => handleUndoDelete(movie.id)}
+                onSelect={() => setSelectedMovie(movie)}
+                onDelete={(e) => {
+                  e?.stopPropagation();
+                  handleDeleteRequest(movie.id);
+                }}
+                onUndo={(e) => {
+                  e?.stopPropagation();
+                  handleUndoDelete(movie.id);
+                }}
               />
             </Collapse>
           ))

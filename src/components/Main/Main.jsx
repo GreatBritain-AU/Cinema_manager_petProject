@@ -29,7 +29,7 @@ const menuItems = [
   { label: "Service", icon: <SettingsOutlinedIcon /> },
 ];
 
-export default function Main() {
+export default function Main({ children }) {
   const [selected, setSelected] = useState("Home");
 
   return (
@@ -37,6 +37,7 @@ export default function Main() {
       sx={{
         display: "flex",
         flex: 1,
+        minWidth: 0,
         backgroundColor: "#3d3d3d",
         pt: "120px",
         pb: 4,
@@ -57,7 +58,7 @@ export default function Main() {
             color: "#fff",
             borderRight: "none",
             boxSizing: "border-box",
-            top: 115,
+            top: "115px",
             height: "auto",
             boxShadow: "none",
             borderRadius: 2,

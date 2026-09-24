@@ -1,7 +1,9 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import { Box, Button, Collapse, Pagination, Typography } from "@mui/material";
+
+import { fetchPersonImage } from "../../../services/tmdb";
 
 import ListRow from "../../Common/ListRow";
 
@@ -200,6 +202,37 @@ const ITEMS_PER_PAGE = 8;
 const UNDO_TIMEOUT_MS = 5000;
 const COLLAPSE_ANIMATION_MS = 300;
 
+// Обертка для строки актера с динамическим фетчем аватара из TMDB
+const ActorRowItem = ({ actor, isDeleting, onDelete, onUndo }) => {
+  const [photoUrl, setPhotoUrl] = useState(actor.photo || null);
+
+  useEffect(() => {
+    let isMounted = true;
+    fetchPersonImage(actor.full_name).then((url) => {
+      if (isMounted && url) {
+        setPhotoUrl(url);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [actor.full_name]);
+
+  return (
+    <ListRow
+      imageSrc={photoUrl}
+      title={actor.full_name}
+      subtitle={actor.country}
+      isDeleting={isDeleting}
+      duration={UNDO_TIMEOUT_MS}
+      onEdit={() => console.log("Edit", actor.id)}
+      onDelete={onDelete}
+      onUndo={onUndo}
+    />
+  );
+};
+
 export const ActorsList = () => {
   const [actors, setActors] = useState(initialActors);
   const [page, setPage] = useState(1);
@@ -300,13 +333,9 @@ export const ActorsList = () => {
               timeout={COLLAPSE_ANIMATION_MS}
               unmountOnExit
             >
-              <ListRow
-                imageSrc={actor.photo}
-                title={actor.full_name}
-                subtitle={actor.country}
+              <ActorRowItem
+                actor={actor}
                 isDeleting={deletingIds.includes(actor.id)}
-                duration={UNDO_TIMEOUT_MS}
-                onEdit={() => console.log("Edit", actor.id)}
                 onDelete={() => handleDeleteRequest(actor.id)}
                 onUndo={() => handleUndoDelete(actor.id)}
               />
