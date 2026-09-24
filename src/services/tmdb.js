@@ -2,7 +2,21 @@ const API_KEY = "8a476b51e88694ba317450f8093d10c0";
 const BASE_URL = "https://api.themoviedb.org/3";
 const IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500";
 
-// Получение деталей фильма + постера + описания + состава
+// Выбирает лучший трейлер из списка видео TMDB
+// Приоритет: официальный трейлер -> любой трейлер -> тизер -> любое видео
+const pickTrailerKey = (videos = []) => {
+  const youtube = videos.filter((video) => video.site === "YouTube");
+
+  const best =
+    youtube.find((video) => video.type === "Trailer" && video.official) ||
+    youtube.find((video) => video.type === "Trailer") ||
+    youtube.find((video) => video.type === "Teaser") ||
+    youtube[0];
+
+  return best?.key || null;
+};
+
+// Получение деталей фильма + постера + описания + состава + трейлера
 export const fetchMovieDetails = async (title, year) => {
   try {
     const searchUrl = `${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(
@@ -18,7 +32,7 @@ export const fetchMovieDetails = async (title, year) => {
 
     const movieId = searchData.results[0].id;
 
-    const detailsUrl = `${BASE_URL}/movie/${movieId}?api_key=${API_KEY}&append_to_response=credits&language=en-US&include_image_language=en,null`;
+    const detailsUrl = `${BASE_URL}/movie/${movieId}?api_key=${API_KEY}&append_to_response=credits,videos&language=en-US&include_image_language=en,null&include_video_language=en,null`;
     const detailsRes = await fetch(detailsUrl);
     const detailsData = await detailsRes.json();
 
@@ -40,7 +54,6 @@ export const fetchMovieDetails = async (title, year) => {
         : null,
     }));
 
-    // studios теперь внутри try, где доступна detailsData
     const studios = detailsData.production_companies
       ?.map((company) => company.name)
       .join(", ");
@@ -54,6 +67,7 @@ export const fetchMovieDetails = async (title, year) => {
       studios: studios || "—",
       cast: cast || [],
       genres: detailsData.genres?.map((g) => g.name).join(", "),
+      trailerKey: pickTrailerKey(detailsData.videos?.results),
     };
   } catch (error) {
     console.error("Error fetching movie details from TMDB:", error);
@@ -61,7 +75,7 @@ export const fetchMovieDetails = async (title, year) => {
   }
 };
 
-// Поиск фотографии актера / режиссера по имени
+// Поиск фотографии актера/режиссера по имени
 export const fetchPersonImage = async (name) => {
   try {
     const searchUrl = `${BASE_URL}/search/person?api_key=${API_KEY}&query=${encodeURIComponent(
@@ -81,6 +95,24 @@ export const fetchPersonImage = async (name) => {
     return null;
   } catch (error) {
     console.error("Error fetching person image from TMDB:", error);
+    return null;
+  }
+};
+
+// Поиск логотипа киностудии по названию
+export const fetchCompanyLogo = async (name) => {
+  try {
+    const searchUrl = `${BASE_URL}/search/company?api_key=${API_KEY}&query=${encodeURIComponent(
+      name,
+    )}`;
+
+    const res = await fetch(searchUrl);
+    const data = await res.json();
+
+    const withLogo = data.results?.find((company) => company.logo_path);
+    return withLogo ? `${IMAGE_BASE_URL}${withLogo.logo_path}` : null;
+  } catch (error) {
+    console.error("Error fetching company logo from TMDB:", error);
     return null;
   }
 };

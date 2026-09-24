@@ -1,7 +1,16 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
-import DomainIcon from "@mui/icons-material/Domain";
-import { Box, Button, Collapse, Pagination, Typography } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import {
+  Box,
+  Button,
+  Collapse,
+  Pagination,
+  Typography,
+  useTheme,
+} from "@mui/material";
+
+import { fetchCompanyLogo } from "../../../services/tmdb";
 
 import ListRow from "../../Common/ListRow";
 
@@ -33,6 +42,7 @@ const initialStudios = [
   {
     id: "5",
     title: "Columbia Pictures (Sony)",
+    searchName: "Columbia Pictures",
     location: "Culver City, California, USA",
     logo: "/images/columbia.jpg",
   },
@@ -45,6 +55,7 @@ const initialStudios = [
   {
     id: "7",
     title: "Lionsgate Films",
+    searchName: "Lionsgate",
     location: "Santa Monica, California, USA",
     logo: "/images/lionsgate.jpg",
   },
@@ -57,6 +68,7 @@ const initialStudios = [
   {
     id: "9",
     title: "Metro-Goldwyn-Mayer (MGM)",
+    searchName: "Metro-Goldwyn-Mayer",
     location: "Beverly Hills, California, USA",
     logo: "/images/mgm.jpg",
   },
@@ -75,6 +87,7 @@ const initialStudios = [
   {
     id: "12",
     title: "Pixar Animation Studios",
+    searchName: "Pixar",
     location: "Emeryville, California, USA",
     logo: "/images/pixar.jpg",
   },
@@ -102,7 +115,39 @@ const ITEMS_PER_PAGE = 8;
 const UNDO_TIMEOUT_MS = 5000;
 const COLLAPSE_ANIMATION_MS = 300;
 
+const StudioRowItem = ({ studio, isDeleting, onDelete, onUndo }) => {
+  const [logoUrl, setLogoUrl] = useState(studio.logo || null);
+
+  useEffect(() => {
+    let isMounted = true;
+    fetchCompanyLogo(studio.searchName || studio.title).then((url) => {
+      if (isMounted && url) {
+        setLogoUrl(url);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [studio.searchName, studio.title]);
+
+  return (
+    <ListRow
+      imageSrc={logoUrl}
+      imageFit="contain"
+      title={studio.title}
+      subtitle={studio.location}
+      isDeleting={isDeleting}
+      duration={UNDO_TIMEOUT_MS}
+      onEdit={() => console.log("Edit", studio.id)}
+      onDelete={onDelete}
+      onUndo={onUndo}
+    />
+  );
+};
+
 export const StudiosList = () => {
+  const theme = useTheme();
   const [studios, setStudios] = useState(initialStudios);
   const [page, setPage] = useState(1);
   const [deletingIds, setDeletingIds] = useState([]);
@@ -149,11 +194,15 @@ export const StudiosList = () => {
       sx={{
         width: "100%",
         maxWidth: "680px",
-        backgroundColor: "#2d2d2d",
-        borderRadius: "10px",
+        backgroundColor: theme.palette.background.paper,
+        color: theme.palette.text.primary,
+        borderRadius: "12px",
         padding: "24px 28px",
         boxSizing: "border-box",
-        boxShadow: "0 4px 20px rgba(0,0,0,0.25)",
+        boxShadow: theme.palette.custom.cardShadow,
+        border: `1px solid ${theme.palette.custom.cardBorder}`,
+        margin: "0 auto",
+        transition: "all 0.3s ease",
       }}
     >
       <Box
@@ -164,27 +213,23 @@ export const StudiosList = () => {
           marginBottom: "24px",
         }}
       >
-        <Typography
-          variant="h5"
-          sx={{ color: "#ffffff", fontWeight: 600, fontSize: "1.7rem" }}
-        >
+        <Typography variant="h5" sx={{ fontWeight: 600, fontSize: "1.7rem" }}>
           Studios list
         </Typography>
 
         <Button
           variant="contained"
-          startIcon={<DomainIcon />}
+          startIcon={<AddIcon />}
           sx={{
-            backgroundColor: "#798e91",
-            color: "#0c1c2c",
+            backgroundColor: theme.palette.primary.main,
+            color: theme.palette.primary.contrastText,
             fontWeight: 700,
-            textTransform: "uppercase",
-            fontSize: "0.78rem",
-            padding: "7px 16px",
-            borderRadius: "4px",
+            fontSize: "12px",
+            padding: "8px 16px",
+            borderRadius: "6px",
             boxShadow: "none",
             "&:hover": {
-              backgroundColor: "#cbcecd",
+              backgroundColor: theme.palette.primary.dark,
               boxShadow: "none",
             },
           }}
@@ -202,20 +247,22 @@ export const StudiosList = () => {
               timeout={COLLAPSE_ANIMATION_MS}
               unmountOnExit
             >
-              <ListRow
-                imageSrc={studio.logo}
-                title={studio.title}
-                subtitle={studio.location}
+              <StudioRowItem
+                studio={studio}
                 isDeleting={deletingIds.includes(studio.id)}
-                duration={UNDO_TIMEOUT_MS}
-                onEdit={() => console.log("Edit", studio.id)}
                 onDelete={() => handleDeleteRequest(studio.id)}
                 onUndo={() => handleUndoDelete(studio.id)}
               />
             </Collapse>
           ))
         ) : (
-          <Typography sx={{ color: "#b0bec5", textAlign: "center", py: 4 }}>
+          <Typography
+            sx={{
+              color: theme.palette.text.secondary,
+              textAlign: "center",
+              py: 4,
+            }}
+          >
             Nothing here yet
           </Typography>
         )}
@@ -231,13 +278,13 @@ export const StudiosList = () => {
             onChange={handlePageChange}
             sx={{
               "& .MuiPaginationItem-root": {
-                color: "#ffffff",
+                color: theme.palette.text.primary,
                 "&.Mui-selected": {
-                  backgroundColor: "#798e91",
-                  color: "#0c1c2c",
+                  backgroundColor: theme.palette.primary.main,
+                  color: theme.palette.primary.contrastText,
                   fontWeight: "bold",
                   "&:hover": {
-                    backgroundColor: "#cbcecd",
+                    backgroundColor: theme.palette.primary.dark,
                   },
                 },
               },

@@ -1,7 +1,14 @@
 import React, { useEffect, useRef, useState } from "react";
 
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
-import { Box, Button, Collapse, Pagination, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Collapse,
+  Pagination,
+  Typography,
+  useTheme,
+} from "@mui/material";
 
 import { fetchPersonImage } from "../../../services/tmdb";
 
@@ -202,7 +209,6 @@ const ITEMS_PER_PAGE = 8;
 const UNDO_TIMEOUT_MS = 5000;
 const COLLAPSE_ANIMATION_MS = 300;
 
-// Обертка для строки актера с динамическим фетчем аватара из TMDB
 const ActorRowItem = ({ actor, isDeleting, onDelete, onUndo }) => {
   const [photoUrl, setPhotoUrl] = useState(actor.photo || null);
 
@@ -234,6 +240,7 @@ const ActorRowItem = ({ actor, isDeleting, onDelete, onUndo }) => {
 };
 
 export const ActorsList = () => {
+  const theme = useTheme();
   const [actors, setActors] = useState(initialActors);
   const [page, setPage] = useState(1);
   const [deletingIds, setDeletingIds] = useState([]);
@@ -280,11 +287,15 @@ export const ActorsList = () => {
       sx={{
         width: "100%",
         maxWidth: "680px",
-        backgroundColor: "#2d2d2d",
-        borderRadius: "10px",
+        backgroundColor: theme.palette.background.paper,
+        color: theme.palette.text.primary,
+        borderRadius: "12px",
         padding: "24px 28px",
         boxSizing: "border-box",
-        boxShadow: "0 4px 20px rgba(0,0,0,0.25)",
+        boxShadow: theme.palette.custom.cardShadow,
+        border: `1px solid ${theme.palette.custom.cardBorder}`,
+        margin: "0 auto",
+        transition: "all 0.3s ease",
       }}
     >
       <Box
@@ -295,10 +306,7 @@ export const ActorsList = () => {
           marginBottom: "24px",
         }}
       >
-        <Typography
-          variant="h5"
-          sx={{ color: "#ffffff", fontWeight: 600, fontSize: "1.7rem" }}
-        >
+        <Typography variant="h5" sx={{ fontWeight: 600, fontSize: "1.7rem" }}>
           Actors list
         </Typography>
 
@@ -306,16 +314,15 @@ export const ActorsList = () => {
           variant="contained"
           startIcon={<PersonAddIcon />}
           sx={{
-            backgroundColor: "#798e91",
-            color: "#0c1c2c",
+            backgroundColor: theme.palette.primary.main,
+            color: theme.palette.primary.contrastText,
             fontWeight: 700,
-            textTransform: "uppercase",
-            fontSize: "0.78rem",
-            padding: "7px 16px",
-            borderRadius: "4px",
+            fontSize: "12px",
+            padding: "8px 16px",
+            borderRadius: "6px",
             boxShadow: "none",
             "&:hover": {
-              backgroundColor: "#cbcecd",
+              backgroundColor: theme.palette.primary.dark,
               boxShadow: "none",
             },
           }}
@@ -342,7 +349,13 @@ export const ActorsList = () => {
             </Collapse>
           ))
         ) : (
-          <Typography sx={{ color: "#b0bec5", textAlign: "center", py: 4 }}>
+          <Typography
+            sx={{
+              color: theme.palette.text.secondary,
+              textAlign: "center",
+              py: 4,
+            }}
+          >
             Nothing here yet
           </Typography>
         )}
@@ -358,13 +371,13 @@ export const ActorsList = () => {
             onChange={handlePageChange}
             sx={{
               "& .MuiPaginationItem-root": {
-                color: "#ffffff",
+                color: theme.palette.text.primary,
                 "&.Mui-selected": {
-                  backgroundColor: "#798e91",
-                  color: "#0c1c2c",
+                  backgroundColor: theme.palette.primary.main,
+                  color: theme.palette.primary.contrastText,
                   fontWeight: "bold",
                   "&:hover": {
-                    backgroundColor: "#cbcecd",
+                    backgroundColor: theme.palette.primary.dark,
                   },
                 },
               },

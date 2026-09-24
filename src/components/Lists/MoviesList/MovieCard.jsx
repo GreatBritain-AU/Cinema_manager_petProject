@@ -1,24 +1,38 @@
 import { useEffect, useState } from "react";
 
-import AddBoxIcon from "@mui/icons-material/AddBox";
+import AddIcon from "@mui/icons-material/Add";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import EditIcon from "@mui/icons-material/Edit";
-import { Box, Button, Card, Divider, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Card,
+  Divider,
+  Typography,
+  useTheme,
+} from "@mui/material";
 
 import { fetchMovieDetails } from "../../../services/tmdb";
 
 function MovieCard({ movie, onBack, onEdit, onAddMovie }) {
+  const theme = useTheme();
   const [activeTab, setActiveTab] = useState("about");
   const [details, setDetails] = useState(null);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
     if (!movie?.title) return;
 
     let isMounted = true;
+    setDetails(null);
+    setIsLoaded(false);
+
     fetchMovieDetails(movie.title, movie.year).then((data) => {
-      if (isMounted && data) {
+      if (!isMounted) return;
+      if (data) {
         setDetails(data);
       }
+      setIsLoaded(true);
     });
 
     return () => {
@@ -43,40 +57,52 @@ function MovieCard({ movie, onBack, onEdit, onAddMovie }) {
   const studiosText = details?.studios || movie?.studios || "—";
   const overview =
     details?.overview || movie?.description || "No description available.";
+  const trailerSrc =
+    movie?.trailerUrl ||
+    (details?.trailerKey
+      ? `https://www.youtube.com/embed/${details.trailerKey}?rel=0`
+      : null);
 
   return (
     <Box
       sx={{
         width: "100%",
-        maxWidth: "680px",
+        maxWidth: "760px",
         margin: "0 auto",
       }}
     >
       <Card
         sx={{
-          padding: "24px",
-          backgroundColor: "#242424",
-          color: "white",
-          borderRadius: "8px",
-          boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.5)",
-          height: "auto",
+          padding: "28px",
+          backgroundColor: theme.palette.background.paper,
+          color: theme.palette.text.primary,
+          borderRadius: "16px",
+          boxShadow: theme.palette.custom.cardShadow,
+          border: `1px solid ${theme.palette.custom.cardBorder}`,
+          transition: "all 0.3s ease",
         }}
       >
-        <Box sx={{ display: "flex", gap: "15px", mb: 4 }}>
+        <Box sx={{ display: "flex", gap: 2, mb: 3 }}>
           <Button
-            variant="contained"
+            variant="outlined"
             startIcon={<ArrowBackIcon />}
             onClick={onBack}
             sx={{
               flex: 1,
-              backgroundColor: "#29abe2",
-              color: "#111",
-              fontSize: "12px",
-              fontWeight: "bold",
-              padding: "10px",
+              borderColor: theme.palette.divider,
+              color: theme.palette.text.primary,
+              fontSize: "13px",
+              fontWeight: 600,
+              borderRadius: "8px",
+              textTransform: "uppercase",
+              py: "10px",
+              "&:hover": {
+                borderColor: theme.palette.text.secondary,
+                backgroundColor: theme.palette.action.hover,
+              },
             }}
           >
-            TO MOVIES
+            To Movies
           </Button>
 
           <Button
@@ -85,30 +111,45 @@ function MovieCard({ movie, onBack, onEdit, onAddMovie }) {
             onClick={onEdit}
             sx={{
               flex: 1,
-              backgroundColor: "#ffad22",
-              color: "#111",
-              fontSize: "12px",
-              fontWeight: "bold",
-              padding: "10px",
+              backgroundColor: theme.palette.secondary.main,
+              color: theme.palette.secondary.contrastText,
+              fontSize: "13px",
+              fontWeight: 700,
+              borderRadius: "8px",
+              boxShadow: "none",
+              textTransform: "uppercase",
+              py: "10px",
+              "&:hover": {
+                backgroundColor: theme.palette.secondary.main,
+                filter: "brightness(0.9)",
+                boxShadow: "none",
+              },
             }}
           >
-            EDIT
+            Edit
           </Button>
 
           <Button
             variant="contained"
-            startIcon={<AddBoxIcon />}
+            startIcon={<AddIcon />}
             onClick={onAddMovie}
             sx={{
               flex: 1,
-              backgroundColor: "#63c568",
-              color: "#111",
-              fontSize: "12px",
-              fontWeight: "bold",
-              padding: "10px",
+              backgroundColor: theme.palette.primary.main,
+              color: theme.palette.primary.contrastText,
+              fontSize: "13px",
+              fontWeight: 700,
+              borderRadius: "8px",
+              boxShadow: "none",
+              textTransform: "uppercase",
+              py: "10px",
+              "&:hover": {
+                backgroundColor: theme.palette.primary.dark,
+                boxShadow: "none",
+              },
             }}
           >
-            ADD MOVIE
+            Add Movie
           </Button>
         </Box>
 
@@ -116,8 +157,8 @@ function MovieCard({ movie, onBack, onEdit, onAddMovie }) {
           sx={{
             display: "flex",
             justifyContent: "space-between",
-            alignItems: "flex-end",
-            mb: 1,
+            alignItems: "center",
+            mb: 1.5,
           }}
         >
           <Box sx={{ display: "flex", gap: 3 }}>
@@ -125,115 +166,137 @@ function MovieCard({ movie, onBack, onEdit, onAddMovie }) {
               onClick={() => setActiveTab("about")}
               sx={{
                 fontSize: "14px",
-                fontWeight: "bold",
+                fontWeight: 700,
                 textTransform: "uppercase",
                 letterSpacing: "0.5px",
-                color: activeTab === "about" ? "#29abe2" : "#888",
+                color:
+                  activeTab === "about"
+                    ? theme.palette.primary.main
+                    : theme.palette.text.secondary,
                 borderBottom:
                   activeTab === "about"
-                    ? "3px solid #29abe2"
+                    ? `3px solid ${theme.palette.primary.main}`
                     : "3px solid transparent",
                 pb: 1,
                 cursor: "pointer",
                 transition: "all 0.2s ease",
               }}
             >
-              ABOUT THE MOVIE
+              About the movie
             </Typography>
 
             <Typography
               onClick={() => setActiveTab("trailer")}
               sx={{
                 fontSize: "14px",
-                fontWeight: "bold",
+                fontWeight: 700,
                 textTransform: "uppercase",
                 letterSpacing: "0.5px",
-                color: activeTab === "trailer" ? "#29abe2" : "#888",
+                color:
+                  activeTab === "trailer"
+                    ? theme.palette.primary.main
+                    : theme.palette.text.secondary,
                 borderBottom:
                   activeTab === "trailer"
-                    ? "3px solid #29abe2"
+                    ? `3px solid ${theme.palette.primary.main}`
                     : "3px solid transparent",
                 pb: 1,
                 cursor: "pointer",
                 transition: "all 0.2s ease",
               }}
             >
-              MOVIE TRAILER
+              Movie trailer
             </Typography>
           </Box>
 
-          <Typography sx={{ fontSize: "12px", color: "#666", pb: 1 }}>
+          <Typography
+            sx={{
+              fontSize: "12px",
+              color: theme.palette.text.secondary,
+              pb: 1,
+            }}
+          >
             Updated at: {movie?.updatedAt || "13-08-2024 14:46"}
           </Typography>
         </Box>
 
-        <Divider sx={{ backgroundColor: "#333", mb: 3 }} />
+        <Divider sx={{ borderColor: theme.palette.divider, mb: 3 }} />
 
         {activeTab === "about" && (
-          <Box sx={{ display: "flex", gap: 4, alignItems: "flex-start" }}>
+          <Box
+            sx={{
+              display: "flex",
+              gap: 4,
+              alignItems: "flex-start",
+              flexDirection: { xs: "column", sm: "row" },
+            }}
+          >
             <Box
               component="img"
               src={posterUrl}
               alt={movie?.title || "Movie Poster"}
               sx={{
-                width: "240px",
-                height: "360px",
+                width: { xs: "100%", sm: "220px" },
+                height: { xs: "auto", sm: "330px" },
+                maxHeight: "360px",
                 objectFit: "cover",
-                borderRadius: "4px",
-                backgroundColor: "#222",
+                borderRadius: "10px",
+                boxShadow: "0px 6px 16px rgba(0,0,0,0.2)",
                 flexShrink: 0,
               }}
             />
 
-            <Box sx={{ flex: 1, minWidth: 0, height: "auto" }}>
+            <Box sx={{ flex: 1, minWidth: 0 }}>
               <Typography
+                variant="h4"
                 sx={{
-                  fontSize: "32px",
-                  fontWeight: "bold",
-                  mb: 1.5,
-                  lineHeight: 1.1,
+                  fontWeight: 800,
+                  mb: 2,
+                  color: theme.palette.text.primary,
                 }}
               >
                 {movie?.title || "Untitled Movie"}
               </Typography>
 
-              <Typography sx={{ fontSize: "16px", mb: 1.5, color: "#fff" }}>
-                <b>Movie year:</b> {movie?.year || "—"}
-              </Typography>
-
-              <Typography sx={{ fontSize: "16px", mb: 3, color: "#fff" }}>
-                <b>Genre:</b> {movie?.genre || "—"}
-              </Typography>
-
-              <Typography sx={{ fontSize: "16px", mb: 3, color: "#fff" }}>
-                <b>Studios:</b>{" "}
-                <span style={{ borderBottom: "1px dashed #fff" }}>
-                  {studiosText}
-                </span>
-              </Typography>
-
-              <Typography sx={{ fontSize: "16px", mb: 3, color: "#fff" }}>
-                <b>Directors:</b>{" "}
-                <span style={{ borderBottom: "1px dashed #fff" }}>
-                  {directors}
-                </span>
-              </Typography>
-
-              <Typography sx={{ fontSize: "16px", mb: 4, color: "#fff" }}>
-                <b>Actors:</b>{" "}
-                <span style={{ borderBottom: "1px dashed #fff" }}>
-                  {actors}
-                </span>
-              </Typography>
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 1.2,
+                  mb: 3,
+                  "& p": {
+                    fontSize: "15px",
+                    color: theme.palette.text.primary,
+                    margin: 0,
+                  },
+                  "& b": {
+                    color: theme.palette.text.secondary,
+                    marginRight: "6px",
+                  },
+                }}
+              >
+                <Typography>
+                  <b>Movie year:</b> {movie?.year || "—"}
+                </Typography>
+                <Typography>
+                  <b>Genre:</b> {movie?.genre || "—"}
+                </Typography>
+                <Typography>
+                  <b>Studios:</b> {studiosText}
+                </Typography>
+                <Typography>
+                  <b>Directors:</b> {directors}
+                </Typography>
+                <Typography>
+                  <b>Actors:</b> {actors}
+                </Typography>
+              </Box>
 
               <Typography
                 sx={{
-                  fontSize: "15px",
+                  fontSize: "14px",
                   lineHeight: 1.6,
-                  textAlign: "justify",
-                  color: "#e0e0e0",
-                  whiteSpace: "normal",
-                  overflow: "visible",
+                  color: theme.palette.text.secondary,
                 }}
               >
                 {overview}
@@ -242,37 +305,52 @@ function MovieCard({ movie, onBack, onEdit, onAddMovie }) {
           </Box>
         )}
 
-        {activeTab === "trailer" && (
-          <Box
-            sx={{
-              position: "relative",
-              width: "100%",
-              paddingTop: "56.25%",
-              backgroundColor: "#000",
-              borderRadius: "4px",
-              overflow: "hidden",
-            }}
-          >
+        {/* ТРЕЙЛЕР */}
+        {activeTab === "trailer" &&
+          (trailerSrc ? (
             <Box
-              component="iframe"
-              src={
-                movie?.trailerUrl || "https://www.youtube.com/embed/NmzuHjWmXOc"
-              }
-              title="Movie Trailer"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowFullScreen
               sx={{
-                position: "absolute",
-                top: 0,
-                left: 0,
+                position: "relative",
                 width: "100%",
-                height: "100%",
-                border: "none",
+                paddingTop: "56.25%",
+                backgroundColor: "#000",
+                borderRadius: "10px",
+                overflow: "hidden",
               }}
-            />
-          </Box>
-        )}
+            >
+              <Box
+                component="iframe"
+                src={trailerSrc}
+                title={`${movie?.title || "Movie"} trailer`}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                sx={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  width: "100%",
+                  height: "100%",
+                  border: "none",
+                }}
+              />
+            </Box>
+          ) : (
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                minHeight: "240px",
+                borderRadius: "10px",
+                backgroundColor: theme.palette.custom.surfaceAlt,
+                border: `1px solid ${theme.palette.custom.itemBorder}`,
+              }}
+            >
+              <Typography sx={{ color: theme.palette.text.secondary }}>
+                {isLoaded ? "Trailer not found" : "Loading trailer…"}
+              </Typography>
+            </Box>
+          ))}
       </Card>
     </Box>
   );

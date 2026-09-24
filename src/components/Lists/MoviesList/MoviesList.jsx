@@ -1,7 +1,14 @@
 import React, { useEffect, useRef, useState } from "react";
 
-import MovieIcon from "@mui/icons-material/Movie";
-import { Box, Button, Collapse, Pagination, Typography } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import {
+  Box,
+  Button,
+  Collapse,
+  Pagination,
+  Typography,
+  useTheme,
+} from "@mui/material";
 
 import { fetchMovieDetails } from "../../../services/tmdb";
 
@@ -428,12 +435,10 @@ const ITEMS_PER_PAGE = 7;
 const UNDO_TIMEOUT_MS = 5000;
 const COLLAPSE_ANIMATION_MS = 300;
 
-// Обертка для строки фильма с динамическим фетчем постера из TMDB
 const MovieRowItem = ({ movie, isDeleting, onDelete, onUndo, onSelect }) => {
   const [posterUrl, setPosterUrl] = useState(movie.poster || null);
 
   useEffect(() => {
-    // Если постер не передан локально или является битой строкой — ищем через TMDB
     let isMounted = true;
     fetchMovieDetails(movie.title, movie.year).then((data) => {
       if (isMounted && data?.poster) {
@@ -467,6 +472,7 @@ const MovieRowItem = ({ movie, isDeleting, onDelete, onUndo, onSelect }) => {
 };
 
 export const MoviesList = () => {
+  const theme = useTheme();
   const [movies, setMovies] = useState(initialMovies);
   const [selectedMovie, setSelectedMovie] = useState(null);
   const [page, setPage] = useState(1);
@@ -525,12 +531,15 @@ export const MoviesList = () => {
       sx={{
         width: "100%",
         maxWidth: "680px",
-        backgroundColor: "#2d2d2d",
-        borderRadius: "10px",
+        backgroundColor: theme.palette.background.paper,
+        color: theme.palette.text.primary,
+        borderRadius: "12px",
         padding: "24px 28px",
         boxSizing: "border-box",
-        boxShadow: "0 4px 20px rgba(0,0,0,0.25)",
+        boxShadow: theme.shadows[4],
+        border: `1px solid ${theme.palette.divider}`,
         margin: "0 auto",
+        transition: "all 0.3s ease",
       }}
     >
       <Box
@@ -541,27 +550,23 @@ export const MoviesList = () => {
           marginBottom: "24px",
         }}
       >
-        <Typography
-          variant="h5"
-          sx={{ color: "#ffffff", fontWeight: 600, fontSize: "1.7rem" }}
-        >
+        <Typography variant="h5" sx={{ fontWeight: 600, fontSize: "1.7rem" }}>
           Movies list
         </Typography>
 
         <Button
           variant="contained"
-          startIcon={<MovieIcon />}
+          startIcon={<AddIcon />}
           sx={{
-            backgroundColor: "#798e91",
-            color: "#0c1c2c",
+            backgroundColor: theme.palette.primary.main,
+            color: theme.palette.primary.contrastText,
             fontWeight: 700,
-            textTransform: "uppercase",
-            fontSize: "0.78rem",
-            padding: "7px 16px",
-            borderRadius: "4px",
+            fontSize: "12px",
+            padding: "8px 16px",
+            borderRadius: "6px",
             boxShadow: "none",
             "&:hover": {
-              backgroundColor: "#cbcecd",
+              backgroundColor: theme.palette.primary.dark,
               boxShadow: "none",
             },
           }}
@@ -595,7 +600,13 @@ export const MoviesList = () => {
             </Collapse>
           ))
         ) : (
-          <Typography sx={{ color: "#b0bec5", textAlign: "center", py: 4 }}>
+          <Typography
+            sx={{
+              color: theme.palette.text.secondary,
+              textAlign: "center",
+              py: 4,
+            }}
+          >
             Nothing here yet
           </Typography>
         )}
@@ -611,13 +622,13 @@ export const MoviesList = () => {
             onChange={handlePageChange}
             sx={{
               "& .MuiPaginationItem-root": {
-                color: "#ffffff",
+                color: theme.palette.text.primary,
                 "&.Mui-selected": {
-                  backgroundColor: "#798e91",
-                  color: "#0c1c2c",
+                  backgroundColor: theme.palette.primary.main,
+                  color: theme.palette.primary.contrastText,
                   fontWeight: "bold",
                   "&:hover": {
-                    backgroundColor: "#cbcecd",
+                    backgroundColor: theme.palette.primary.dark,
                   },
                 },
               },

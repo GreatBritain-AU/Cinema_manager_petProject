@@ -1,6 +1,20 @@
 import React, { useRef, useState } from "react";
 
 import AddIcon from "@mui/icons-material/Add";
+import AnimationIcon from "@mui/icons-material/Animation";
+import AutoFixHighIcon from "@mui/icons-material/AutoFixHigh";
+import ExploreIcon from "@mui/icons-material/Explore";
+import FlashOnIcon from "@mui/icons-material/FlashOn";
+import GavelIcon from "@mui/icons-material/Gavel";
+import LandscapeIcon from "@mui/icons-material/Landscape";
+import LocalFireDepartmentIcon from "@mui/icons-material/LocalFireDepartment";
+import MenuBookIcon from "@mui/icons-material/MenuBook";
+import MovieOutlinedIcon from "@mui/icons-material/MovieOutlined";
+import MusicNoteIcon from "@mui/icons-material/MusicNote";
+import PsychologyIcon from "@mui/icons-material/Psychology";
+import ScienceIcon from "@mui/icons-material/Science";
+import SentimentVerySatisfiedIcon from "@mui/icons-material/SentimentVerySatisfied";
+import TheaterComedyIcon from "@mui/icons-material/TheaterComedy";
 import {
   Box,
   Button,
@@ -9,6 +23,7 @@ import {
   Tab,
   Tabs,
   Typography,
+  useTheme,
 } from "@mui/material";
 
 import ListRow from "../../Common/ListRow";
@@ -31,43 +46,64 @@ const initialGenres = [
 ];
 
 // Все уникальные страны из ActorsList и DirectorsList
+// code это двухбуквенный код страны (ISO), по нему берётся флаг
 const initialCountries = [
-  { id: "c1", title: "Australia" },
-  { id: "c2", title: "Austria" },
-  { id: "c3", title: "Canada" },
-  { id: "c4", title: "Chile" },
-  { id: "c5", title: "Cuba" },
-  { id: "c6", title: "Denmark" },
-  { id: "c7", title: "France" },
-  { id: "c8", title: "Hong Kong" },
-  { id: "c9", title: "Ireland" },
-  { id: "c10", title: "Japan" },
-  { id: "c11", title: "Mexico" },
-  { id: "c12", title: "New Zealand" },
-  { id: "c13", title: "Puerto Rico" },
-  { id: "c14", title: "South Africa" },
-  { id: "c15", title: "South Korea" },
-  { id: "c16", title: "Spain" },
-  { id: "c17", title: "United Kingdom" },
-  { id: "c18", title: "United States" },
+  { id: "c1", title: "Australia", code: "au" },
+  { id: "c2", title: "Austria", code: "at" },
+  { id: "c3", title: "Canada", code: "ca" },
+  { id: "c4", title: "Chile", code: "cl" },
+  { id: "c5", title: "Cuba", code: "cu" },
+  { id: "c6", title: "Denmark", code: "dk" },
+  { id: "c7", title: "France", code: "fr" },
+  { id: "c8", title: "Hong Kong", code: "hk" },
+  { id: "c9", title: "Ireland", code: "ie" },
+  { id: "c10", title: "Japan", code: "jp" },
+  { id: "c11", title: "Mexico", code: "mx" },
+  { id: "c12", title: "New Zealand", code: "nz" },
+  { id: "c13", title: "Puerto Rico", code: "pr" },
+  { id: "c14", title: "South Africa", code: "za" },
+  { id: "c15", title: "South Korea", code: "kr" },
+  { id: "c16", title: "Spain", code: "es" },
+  { id: "c17", title: "United Kingdom", code: "gb" },
+  { id: "c18", title: "United States", code: "us" },
 ];
 
-// Локации из макета + доп. города
 const initialLocations = [
-  { id: "l1", title: "Munchen, Deutschland" },
-  { id: "l2", title: "Paris, France" },
-  { id: "l3", title: "Sydney, Australia" },
-  { id: "l4", title: "New York, United States of America" },
-  { id: "l5", title: "Toronto, Canada" },
-  { id: "l6", title: "Tokyo, Japan" },
-  { id: "l7", title: "London, United Kingdom" },
+  { id: "l1", title: "Munchen, Deutschland", countryCode: "de" },
+  { id: "l2", title: "Paris, France", countryCode: "fr" },
+  { id: "l3", title: "Sydney, Australia", countryCode: "au" },
+  { id: "l4", title: "New York, United States of America", countryCode: "us" },
+  { id: "l5", title: "Toronto, Canada", countryCode: "ca" },
+  { id: "l6", title: "Tokyo, Japan", countryCode: "jp" },
+  { id: "l7", title: "London, United Kingdom", countryCode: "gb" },
 ];
+
+const genreIcons = {
+  Action: LocalFireDepartmentIcon,
+  Adventure: ExploreIcon,
+  Animation: AnimationIcon,
+  Biography: MenuBookIcon,
+  Comedy: SentimentVerySatisfiedIcon,
+  Crime: GavelIcon,
+  Drama: TheaterComedyIcon,
+  Fantasy: AutoFixHighIcon,
+  Music: MusicNoteIcon,
+  Mystery: PsychologyIcon,
+  "Sci-Fi": ScienceIcon,
+  Thriller: FlashOnIcon,
+  Western: LandscapeIcon,
+};
+
+// Флаг страны по коду (flagcdn.com)
+const getFlagUrl = (code) =>
+  code ? `https://flagcdn.com/w80/${code}.png` : null;
 
 const ITEMS_PER_PAGE = 7;
 const UNDO_TIMEOUT_MS = 5000;
 const COLLAPSE_ANIMATION_MS = 300;
 
 export const ServicesList = () => {
+  const theme = useTheme();
   const [tabIndex, setTabIndex] = useState(0);
   const [page, setPage] = useState(1);
 
@@ -86,17 +122,19 @@ export const ServicesList = () => {
   };
 
   const handleDeleteRequest = (id) => {
+    const tabAtDelete = tabIndex;
+
     setDeletingIds((prev) => [...prev, id]);
 
     timersRef.current[id] = setTimeout(() => {
       setCollapsingIds((prev) => [...prev, id]);
 
       setTimeout(() => {
-        if (tabIndex === 0)
+        if (tabAtDelete === 0)
           setGenres((prev) => prev.filter((item) => item.id !== id));
-        if (tabIndex === 1)
+        if (tabAtDelete === 1)
           setCountries((prev) => prev.filter((item) => item.id !== id));
-        if (tabIndex === 2)
+        if (tabAtDelete === 2)
           setLocations((prev) => prev.filter((item) => item.id !== id));
 
         setDeletingIds((prev) => prev.filter((item) => item !== id));
@@ -127,6 +165,17 @@ export const ServicesList = () => {
     return "ADD LOCATION";
   };
 
+  const getRowVisual = (item) => {
+    if (tabIndex === 0) {
+      const GenreIcon = genreIcons[item.title] || MovieOutlinedIcon;
+      return { icon: <GenreIcon /> };
+    }
+    if (tabIndex === 1) {
+      return { imageSrc: getFlagUrl(item.code) };
+    }
+    return { imageSrc: item.coatOfArms || getFlagUrl(item.countryCode) };
+  };
+
   const currentList = getCurrentList();
   const totalPages = Math.ceil(currentList.length / ITEMS_PER_PAGE);
   const startIndex = (page - 1) * ITEMS_PER_PAGE;
@@ -140,11 +189,15 @@ export const ServicesList = () => {
       sx={{
         width: "100%",
         maxWidth: "680px",
-        backgroundColor: "#2d2d2d",
-        borderRadius: "10px",
+        backgroundColor: theme.palette.background.paper,
+        color: theme.palette.text.primary,
+        borderRadius: "12px",
         padding: "24px 28px",
         boxSizing: "border-box",
-        boxShadow: "0 4px 20px rgba(0,0,0,0.25)",
+        boxShadow: theme.palette.custom.cardShadow,
+        border: `1px solid ${theme.palette.custom.cardBorder}`,
+        margin: "0 auto",
+        transition: "all 0.3s ease",
       }}
     >
       <Box
@@ -155,10 +208,7 @@ export const ServicesList = () => {
           marginBottom: "20px",
         }}
       >
-        <Typography
-          variant="h5"
-          sx={{ color: "#ffffff", fontWeight: 600, fontSize: "1.7rem" }}
-        >
+        <Typography variant="h5" sx={{ fontWeight: 600, fontSize: "1.7rem" }}>
           Service List
         </Typography>
 
@@ -166,16 +216,15 @@ export const ServicesList = () => {
           variant="contained"
           startIcon={<AddIcon />}
           sx={{
-            backgroundColor: "#798e91",
-            color: "#0c1c2c",
+            backgroundColor: theme.palette.primary.main,
+            color: theme.palette.primary.contrastText,
             fontWeight: 700,
-            textTransform: "uppercase",
-            fontSize: "0.78rem",
-            padding: "7px 16px",
-            borderRadius: "4px",
+            fontSize: "12px",
+            padding: "8px 16px",
+            borderRadius: "6px",
             boxShadow: "none",
             "&:hover": {
-              backgroundColor: "#cbcecd",
+              backgroundColor: theme.palette.primary.dark,
               boxShadow: "none",
             },
           }}
@@ -187,7 +236,7 @@ export const ServicesList = () => {
       <Box
         sx={{
           borderBottom: 1,
-          borderColor: "rgba(255, 255, 255, 0.1)",
+          borderColor: theme.palette.divider,
           marginBottom: "20px",
         }}
       >
@@ -195,25 +244,17 @@ export const ServicesList = () => {
           value={tabIndex}
           onChange={handleTabChange}
           textColor="inherit"
-          slotProps={{
-            indicator: {
-              style: {
-                backgroundColor: "#798e91",
-                height: "3px",
-              },
-            },
-          }}
           sx={{
             "& .MuiTabs-indicator": {
-              backgroundColor: "#798e91 !important",
+              backgroundColor: theme.palette.primary.main,
               height: "3px",
             },
             "& .MuiTab-root": {
-              color: "#b0bec5",
+              color: theme.palette.text.secondary,
               fontWeight: 600,
               fontSize: "0.85rem",
               "&.Mui-selected": {
-                color: "#ffffff",
+                color: theme.palette.primary.main,
               },
             },
           }}
@@ -234,6 +275,7 @@ export const ServicesList = () => {
               unmountOnExit
             >
               <ListRow
+                {...getRowVisual(item)}
                 title={item.title}
                 isDeleting={deletingIds.includes(item.id)}
                 duration={UNDO_TIMEOUT_MS}
@@ -244,7 +286,13 @@ export const ServicesList = () => {
             </Collapse>
           ))
         ) : (
-          <Typography sx={{ color: "#b0bec5", textAlign: "center", py: 4 }}>
+          <Typography
+            sx={{
+              color: theme.palette.text.secondary,
+              textAlign: "center",
+              py: 4,
+            }}
+          >
             Nothing here yet
           </Typography>
         )}
@@ -260,13 +308,13 @@ export const ServicesList = () => {
             onChange={(e, val) => setPage(val)}
             sx={{
               "& .MuiPaginationItem-root": {
-                color: "#ffffff",
+                color: theme.palette.text.primary,
                 "&.Mui-selected": {
-                  backgroundColor: "#798e91",
-                  color: "#0c1c2c",
+                  backgroundColor: theme.palette.primary.main,
+                  color: theme.palette.primary.contrastText,
                   fontWeight: "bold",
                   "&:hover": {
-                    backgroundColor: "#cbcecd",
+                    backgroundColor: theme.palette.primary.dark,
                   },
                 },
               },

@@ -1,7 +1,16 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
-import { Box, Button, Collapse, Pagination, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Collapse,
+  Pagination,
+  Typography,
+  useTheme,
+} from "@mui/material";
+
+import { fetchPersonImage } from "../../../services/tmdb";
 
 import ListRow from "../../Common/ListRow";
 
@@ -117,6 +126,7 @@ const initialDirectors = [
   {
     id: "19",
     full_name: "Coen Brothers",
+    searchName: "Joel Coen",
     country: "United States",
     photo: "/images/coen.jpg",
   },
@@ -183,6 +193,7 @@ const initialDirectors = [
   {
     id: "30",
     full_name: "Lana & Lilly Wachowski",
+    searchName: "Lana Wachowski",
     country: "United States",
     photo: "/images/wachowski.jpg",
   },
@@ -192,7 +203,38 @@ const ITEMS_PER_PAGE = 8;
 const UNDO_TIMEOUT_MS = 5000;
 const COLLAPSE_ANIMATION_MS = 300;
 
+const DirectorRowItem = ({ director, isDeleting, onDelete, onUndo }) => {
+  const [photoUrl, setPhotoUrl] = useState(director.photo || null);
+
+  useEffect(() => {
+    let isMounted = true;
+    fetchPersonImage(director.searchName || director.full_name).then((url) => {
+      if (isMounted && url) {
+        setPhotoUrl(url);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [director.searchName, director.full_name]);
+
+  return (
+    <ListRow
+      imageSrc={photoUrl}
+      title={director.full_name}
+      subtitle={director.country}
+      isDeleting={isDeleting}
+      duration={UNDO_TIMEOUT_MS}
+      onEdit={() => console.log("Edit", director.id)}
+      onDelete={onDelete}
+      onUndo={onUndo}
+    />
+  );
+};
+
 export const DirectorsList = () => {
+  const theme = useTheme();
   const [directors, setDirectors] = useState(initialDirectors);
   const [page, setPage] = useState(1);
   const [deletingIds, setDeletingIds] = useState([]);
@@ -242,11 +284,15 @@ export const DirectorsList = () => {
       sx={{
         width: "100%",
         maxWidth: "680px",
-        backgroundColor: "#2d2d2d",
-        borderRadius: "10px",
+        backgroundColor: theme.palette.background.paper,
+        color: theme.palette.text.primary,
+        borderRadius: "12px",
         padding: "24px 28px",
         boxSizing: "border-box",
-        boxShadow: "0 4px 20px rgba(0,0,0,0.25)",
+        boxShadow: theme.palette.custom.cardShadow,
+        border: `1px solid ${theme.palette.custom.cardBorder}`,
+        margin: "0 auto",
+        transition: "all 0.3s ease",
       }}
     >
       <Box
@@ -257,10 +303,7 @@ export const DirectorsList = () => {
           marginBottom: "24px",
         }}
       >
-        <Typography
-          variant="h5"
-          sx={{ color: "#ffffff", fontWeight: 600, fontSize: "1.7rem" }}
-        >
+        <Typography variant="h5" sx={{ fontWeight: 600, fontSize: "1.7rem" }}>
           Directors list
         </Typography>
 
@@ -268,16 +311,15 @@ export const DirectorsList = () => {
           variant="contained"
           startIcon={<PersonAddIcon />}
           sx={{
-            backgroundColor: "#798e91",
-            color: "#0c1c2c",
+            backgroundColor: theme.palette.primary.main,
+            color: theme.palette.primary.contrastText,
             fontWeight: 700,
-            textTransform: "uppercase",
-            fontSize: "0.78rem",
-            padding: "7px 16px",
-            borderRadius: "4px",
+            fontSize: "12px",
+            padding: "8px 16px",
+            borderRadius: "6px",
             boxShadow: "none",
             "&:hover": {
-              backgroundColor: "#cbcecd",
+              backgroundColor: theme.palette.primary.dark,
               boxShadow: "none",
             },
           }}
@@ -295,20 +337,22 @@ export const DirectorsList = () => {
               timeout={COLLAPSE_ANIMATION_MS}
               unmountOnExit
             >
-              <ListRow
-                imageSrc={director.photo}
-                title={director.full_name}
-                subtitle={director.country}
+              <DirectorRowItem
+                director={director}
                 isDeleting={deletingIds.includes(director.id)}
-                duration={UNDO_TIMEOUT_MS}
-                onEdit={() => console.log("Edit", director.id)}
                 onDelete={() => handleDeleteRequest(director.id)}
                 onUndo={() => handleUndoDelete(director.id)}
               />
             </Collapse>
           ))
         ) : (
-          <Typography sx={{ color: "#b0bec5", textAlign: "center", py: 4 }}>
+          <Typography
+            sx={{
+              color: theme.palette.text.secondary,
+              textAlign: "center",
+              py: 4,
+            }}
+          >
             Nothing here yet
           </Typography>
         )}
@@ -324,13 +368,13 @@ export const DirectorsList = () => {
             onChange={handlePageChange}
             sx={{
               "& .MuiPaginationItem-root": {
-                color: "#ffffff",
+                color: theme.palette.text.primary,
                 "&.Mui-selected": {
-                  backgroundColor: "#798e91",
-                  color: "#0c1c2c",
+                  backgroundColor: theme.palette.primary.main,
+                  color: theme.palette.primary.contrastText,
                   fontWeight: "bold",
                   "&:hover": {
-                    backgroundColor: "#cbcecd",
+                    backgroundColor: theme.palette.primary.dark,
                   },
                 },
               },

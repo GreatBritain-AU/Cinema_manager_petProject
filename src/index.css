@@ -1,6 +1,49 @@
-html, body {
+:root {
+  /* ================= Light Mode ================= */
+  --bg-main: #E2E8F0;           /* Сделали выразительный серо-голубой фон */
+  --card-surface: #FFFFFF;
+  --border-divider: #CBD5E1;
+  
+  --primary: #007A87;
+  --secondary: #D99B00;
+  --muted-accent: #8C9BB5;
+
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+
+  --status-success: #059669;
+  --status-warning: #D97706;
+  --status-error: #DC2626;
+  --status-info: #2563EB;
+}
+
+/* ================= Dark Mode ================= */
+[data-theme="dark"] {
+  --bg-main: #0B132B;
+  --card-surface: #1B2A4A;
+  --border-divider: #243456;
+
+  --primary: #00A8B5;
+  --secondary: #F0B429;
+  --muted-accent: #8C9BB5;
+
+  --text-primary: #EDF2F7;
+  --text-secondary: #8A99AD;
+
+  --status-success: #10B981;
+  --status-warning: #F59E0B;
+  --status-error: #EF4444;
+  --status-info: #3B82F6;
+}
+
+/* Убираем !important с background-color */
+html,
+body,
+#root {
   margin: 0;
   padding: 0;
   width: 100%;
-  height: 100%;
+  min-height: 100vh;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }

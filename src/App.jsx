@@ -11,12 +11,9 @@ function App() {
   return (
     <Box
       sx={{
-        minHeight: "100vh",
         display: "flex",
         flexDirection: "column",
-        "& > div:first-of-type": {
-          flexGrow: 0,
-        },
+        minHeight: "100vh",
       }}
     >
       <Header />

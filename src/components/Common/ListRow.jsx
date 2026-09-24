@@ -3,7 +3,14 @@ import React, { useEffect, useState } from "react";
 import CancelIcon from "@mui/icons-material/Cancel";
 import EditIcon from "@mui/icons-material/Edit";
 import UndoIcon from "@mui/icons-material/Undo";
-import { Avatar, Box, IconButton, Typography } from "@mui/material";
+import {
+  alpha,
+  Avatar,
+  Box,
+  IconButton,
+  Typography,
+  useTheme,
+} from "@mui/material";
 
 export const ListRow = ({
   imageSrc,
@@ -14,8 +21,11 @@ export const ListRow = ({
   isDeleting,
   onUndo,
   isPoster = false,
+  imageFit = "cover", // "contain" — для логотипов студий
+  icon = null, // иконка вместо буквы, если нет картинки (например, жанры)
   duration = 5000,
 }) => {
+  const theme = useTheme();
   const [timeLeft, setTimeLeft] = useState(duration);
 
   useEffect(() => {
@@ -46,7 +56,6 @@ export const ListRow = ({
       ? 0.85 + (progressRatio - 0.6) * 0.375
       : 0.05 + (progressRatio / 0.6) * 0.8;
 
-  // Если это постер — высота 72px, если круглый аватар — 62px
   const rowHeight = isPoster ? "72px" : "62px";
   const rowBorderRadius = isPoster ? "10px" : "16px";
 
@@ -60,18 +69,19 @@ export const ListRow = ({
           alignItems: "center",
           justifyContent: "space-between",
           padding: "4px 16px",
-          backgroundColor: "#2d2d2d",
-          border: "1px solid #798e91",
+          backgroundColor: theme.palette.custom.surfaceAlt,
+          border: `1px solid ${theme.palette.error.light || theme.palette.divider}`,
           borderRadius: rowBorderRadius,
           height: rowHeight,
           boxSizing: "border-box",
           cursor: "pointer",
           overflow: "hidden",
           opacity: opacityValue,
-          transition: "border-color 0.2s ease, opacity 0.1s linear",
+          transition:
+            "border-color 0.2s ease, opacity 0.1s linear, background-color 0.2s ease",
           "&:hover": {
-            borderColor: "#cbcecd",
-            backgroundColor: "#333333",
+            borderColor: theme.palette.error.main,
+            backgroundColor: theme.palette.action.hover,
             opacity: Math.max(opacityValue, 0.7),
           },
         }}
@@ -79,7 +89,7 @@ export const ListRow = ({
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           <Typography
             variant="body1"
-            sx={{ color: "#ffffff", fontSize: "0.9rem" }}
+            sx={{ color: theme.palette.text.primary, fontSize: "0.9rem" }}
           >
             {title} removed
           </Typography>
@@ -88,11 +98,15 @@ export const ListRow = ({
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           <Typography
             variant="body2"
-            sx={{ color: "#798e91", fontSize: "0.8rem", fontWeight: 500 }}
+            sx={{
+              color: theme.palette.primary.main,
+              fontSize: "0.8rem",
+              fontWeight: 600,
+            }}
           >
             Undo
           </Typography>
-          <UndoIcon sx={{ color: "#798e91", fontSize: 16 }} />
+          <UndoIcon sx={{ color: theme.palette.primary.main, fontSize: 16 }} />
         </Box>
 
         <Box
@@ -102,7 +116,7 @@ export const ListRow = ({
             left: 0,
             height: "3px",
             width: `${progressPercent}%`,
-            backgroundColor: "#798e91",
+            backgroundColor: theme.palette.primary.main,
             transition: "width 0.05s linear",
           }}
         />
@@ -117,15 +131,21 @@ export const ListRow = ({
         alignItems: "center",
         justifyContent: "space-between",
         padding: isPoster ? "4px 16px 4px 6px" : "6px 16px 6px 8px",
-        backgroundColor: "#2d2d2d",
-        border: "1px solid #798e91",
+        // Строка списка — отдельный уровень поверхности внутри белой карточки
+        backgroundColor: theme.palette.custom.surfaceAlt,
+        border: `1px solid ${theme.palette.custom.itemBorder}`,
         borderRadius: rowBorderRadius,
         height: rowHeight,
         boxSizing: "border-box",
         transition: "all 0.2s ease",
         "&:hover": {
-          borderColor: "#cbcecd",
-          boxShadow: "0 0 8px rgba(121, 142, 145, 0.4)",
+          borderColor: theme.palette.primary.main,
+          backgroundColor: theme.palette.action.hover,
+          boxShadow: `0 2px 8px ${
+            theme.palette.mode === "dark"
+              ? "rgba(0, 0, 0, 0.4)"
+              : "rgba(0, 0, 0, 0.08)"
+          }`,
         },
       }}
     >
@@ -142,32 +162,44 @@ export const ListRow = ({
           alt={title}
           variant={isPoster ? "rounded" : "circular"}
           sx={{
-            // Увеличили размер кружка с 32px до 48px
             width: isPoster ? 42 : 48,
             height: isPoster ? 62 : 48,
             borderRadius: isPoster ? "6px" : "50%",
-            bgcolor: "#1a1a1a",
-            color: "#ffffff",
-            fontSize: "1.1rem", // Сделали крупнее первую букву на случай отсутствия фото
+            // Для логотипов — нейтральный фон, чтобы и белые, и тёмные были видны
+            bgcolor: icon
+              ? alpha(theme.palette.primary.main, 0.14)
+              : imageFit === "contain"
+                ? "#78909C"
+                : theme.palette.action.selected,
+            color: icon
+              ? theme.palette.primary.main
+              : theme.palette.text.primary,
+            fontSize: "1.1rem",
             fontWeight: 600,
             flexShrink: 0,
             "& img": {
-              objectFit: "cover",
+              objectFit: imageFit,
+              boxSizing: "border-box",
+              padding: imageFit === "contain" ? "5px" : 0,
             },
           }}
         >
-          {title ? title[0] : ""}
+          {icon || (title ? title[0] : "")}
         </Avatar>
         <Typography
           variant="body1"
           noWrap
-          sx={{ color: "#ffffff", fontWeight: 400, fontSize: "0.95rem" }}
+          sx={{
+            color: theme.palette.text.primary,
+            fontWeight: 500,
+            fontSize: "0.95rem",
+          }}
         >
           {title}
           {subtitle && (
             <Typography
               component="span"
-              sx={{ color: "#b0bec5", fontSize: "0.85rem" }}
+              sx={{ color: theme.palette.text.secondary, fontSize: "0.85rem" }}
             >
               , {subtitle}
             </Typography>
@@ -181,14 +213,20 @@ export const ListRow = ({
         <IconButton
           size="small"
           onClick={onEdit}
-          sx={{ color: "#ffffff", "&:hover": { color: "#528212" } }}
+          sx={{
+            color: theme.palette.text.secondary,
+            "&:hover": { color: theme.palette.primary.main },
+          }}
         >
           <EditIcon sx={{ fontSize: 18 }} />
         </IconButton>
         <IconButton
           size="small"
           onClick={onDelete}
-          sx={{ color: "#ffffff", "&:hover": { color: "#d4849a" } }}
+          sx={{
+            color: theme.palette.text.secondary,
+            "&:hover": { color: theme.palette.error.main },
+          }}
         >
           <CancelIcon sx={{ fontSize: 18 }} />
         </IconButton>
