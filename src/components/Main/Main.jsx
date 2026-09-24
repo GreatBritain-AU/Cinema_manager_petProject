@@ -1,4 +1,11 @@
 import { useState } from "react";
+
+import BusinessOutlinedIcon from "@mui/icons-material/BusinessOutlined";
+import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
+import MovieOutlinedIcon from "@mui/icons-material/MovieOutlined";
+import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
+import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
+import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import Box from "@mui/material/Box";
 import Drawer from "@mui/material/Drawer";
 import List from "@mui/material/List";
@@ -6,13 +13,14 @@ import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
+import { useTheme } from "@mui/material/styles";
+import Typography from "@mui/material/Typography";
 
-import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
-import MovieOutlinedIcon from "@mui/icons-material/MovieOutlined";
-import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
-import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
-import BusinessOutlinedIcon from "@mui/icons-material/BusinessOutlined";
-import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
+import ActorsList from "../Lists/ActorsList/ActorsList.jsx";
+import DirectorsList from "../Lists/DirectorsList/DirectorsList.jsx";
+import MoviesList from "../Lists/MoviesList/MoviesList.jsx";
+import ServicesList from "../Lists/ServicesList/ServicesList.jsx";
+import StudiosList from "../Lists/StudiosList/StudiosList.jsx";
 
 const menuItems = [
   { label: "Home", icon: <HomeOutlinedIcon /> },
@@ -25,13 +33,19 @@ const menuItems = [
 
 export default function Main() {
   const [selected, setSelected] = useState("Home");
+  const theme = useTheme();
 
   return (
     <Box
       sx={{
         display: "flex",
         flex: 1,
-        backgroundColor: "#3d3d3d",
+        minWidth: 0,
+        backgroundColor: theme.palette.background.default,
+        pt: "120px",
+        pb: 4,
+        px: 3,
+        transition: "background-color 0.3s ease",
       }}
     >
       <Drawer
@@ -44,42 +58,55 @@ export default function Main() {
           "& .MuiDrawer-paper": {
             position: "sticky",
             width: 240,
-            backgroundColor: "#2d2d2d",
-            color: "#fff",
-            borderRight: "none",
+            backgroundColor: theme.palette.custom.sidebar,
+            color: theme.palette.custom.sidebarText,
+            border: `1px solid ${theme.palette.custom.cardBorder}`,
             boxSizing: "border-box",
-            top: 115,
+            top: "115px",
             height: "auto",
-            boxShadow: "none",
+            boxShadow: theme.palette.custom.cardShadow,
             borderRadius: 2,
+            transition: "background-color 0.3s ease, border-color 0.3s ease",
           },
         }}
       >
-        <List disablePadding sx={{ pt: 1 }}>
+        <List disablePadding sx={{ py: 1 }}>
           {menuItems.map(({ label, icon }) => {
             const isSelected = selected === label;
 
             return (
-              <ListItem key={label} disablePadding>
+              <ListItem key={label} disablePadding sx={{ mb: 0.5 }}>
                 <ListItemButton
                   selected={isSelected}
                   onClick={() => setSelected(label)}
                   sx={{
                     px: 2.5,
-                    py: 1.35,
-                    color: "#fff",
+                    py: 1.2,
+                    mx: 1,
+                    borderRadius: 1.5,
+                    color: theme.palette.custom.sidebarText,
                     "&.Mui-selected": {
-                      backgroundColor: "rgba(13, 13, 13, 0.69)",
+                      backgroundColor: theme.palette.custom.sidebarSelected,
+                      color: theme.palette.custom.sidebarIconSelected,
+                      fontWeight: 600,
+                      "& .MuiListItemIcon-root": {
+                        color: theme.palette.custom.sidebarIconSelected,
+                      },
+                      "&:hover": {
+                        backgroundColor: theme.palette.custom.sidebarSelected,
+                      },
                     },
                     "&:hover": {
-                      backgroundColor: "rgba(255,255,255,0.04)",
+                      backgroundColor: theme.palette.custom.sidebarHover,
                     },
                   }}
                 >
                   <ListItemIcon
                     sx={{
                       minWidth: 40,
-                      color: isSelected ? "#ffffff" : "#d8d8d8",
+                      color: isSelected
+                        ? theme.palette.custom.sidebarIconSelected
+                        : theme.palette.custom.sidebarIcon,
                     }}
                   >
                     {icon}
@@ -88,9 +115,12 @@ export default function Main() {
                   <ListItemText
                     primary={label}
                     primaryTypographyProps={{
-                      fontSize: 18,
-                      fontWeight: 500,
+                      fontSize: 15,
+                      fontWeight: isSelected ? 600 : 500,
                       lineHeight: 1.2,
+                      color: isSelected
+                        ? theme.palette.custom.sidebarIconSelected
+                        : theme.palette.custom.sidebarText,
                     }}
                   />
                 </ListItemButton>
@@ -99,6 +129,29 @@ export default function Main() {
           })}
         </List>
       </Drawer>
+
+      <Box
+        sx={{
+          flexGrow: 1,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "flex-start",
+          pr: "240px",
+        }}
+      >
+        {selected === "Home" && (
+          <Box sx={{ p: 4, textAlign: "center" }}>
+            <Typography variant="h5" color="text.secondary">
+              Home Page (In Development)
+            </Typography>
+          </Box>
+        )}
+        {selected === "Actors" && <ActorsList />}
+        {selected === "Directors" && <DirectorsList />}
+        {selected === "Movies" && <MoviesList />}
+        {selected === "Studios" && <StudiosList />}
+        {selected === "Service" && <ServicesList />}
+      </Box>
     </Box>
   );
 }

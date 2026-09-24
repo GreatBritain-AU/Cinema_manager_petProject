@@ -1,7 +1,10 @@
 import Box from "@mui/material/Box";
+import { useTheme } from "@mui/material/styles";
 import Typography from "@mui/material/Typography";
 
 export default function Footer() {
+  const theme = useTheme();
+
   return (
     <Box
       component="footer"
@@ -12,39 +15,33 @@ export default function Footer() {
         alignItems: "center",
         minHeight: 63,
         px: 3,
+        py: 2,
         gap: 0.5,
-        backgroundColor: "#211e1e",
-        color: "#fff",
-        borderTop: "1px solid rgba(255,255,255,0.08)",
+        // footerBg может быть градиентом, поэтому именно `background`
+        background: theme.palette.custom.footerBg,
+        borderTop: `1px solid ${theme.palette.custom.barBorder}`, // Линия над подвалом
+        transition: "border-color 0.3s ease",
       }}
     >
-      <Typography 
+      <Typography
         variant="body2"
         sx={{
-            fontSize: 13,
+          fontSize: 13,
+          color: theme.palette.custom.onBar, // Основной текст
         }}
       >
-        You can find out all information regarding the cinema's operations by calling +38 (066) 947-47-32 
+        You can find out all information regarding the cinema's operations by
+        calling +38 (066) 947-47-32
       </Typography>
 
-      <Typography 
-        variant="body2" 
-        color="rgba(255,255,255,0.6)"
+      <Typography
+        variant="body2"
         sx={{
-                fontSize: 13,
+          fontSize: 13,
+          color: theme.palette.custom.onBarMuted, // Второстепенный текст
         }}
       >
         Copyright 2026 Cinema Manager
-      </Typography>
-
-      <Typography 
-        variant="body2" 
-        color="rgba(255,255,255,0.6)"
-        sx={{
-            fontSize: 13,
-        }}
-      >
-        Copyright 
       </Typography>
     </Box>
   );
