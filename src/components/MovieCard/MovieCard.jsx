@@ -5,7 +5,7 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import EditIcon from "@mui/icons-material/Edit";
 import AddBoxIcon from "@mui/icons-material/AddBox";
 
-function MovieCard() {
+function MovieCard({ onAddMovie }) {
   const [activeTab, setActiveTab] = useState("about");
 
   return (
@@ -13,7 +13,7 @@ function MovieCard() {
       sx={{
         maxWidth: "750px",
         margin: "0 auto",
-        marginTop: "120px", 
+        marginTop: "120px",
       }}
     >
       <Card
@@ -23,7 +23,7 @@ function MovieCard() {
           color: "white",
           borderRadius: "8px",
           boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.5)",
-          height: "auto", // Автоматическая высота под любой размер текста
+          height: "auto",
         }}
       >
         <Box sx={{ display: "flex", gap: "15px", mb: 4 }}>
@@ -60,6 +60,7 @@ function MovieCard() {
           <Button
             variant="contained"
             startIcon={<AddBoxIcon />}
+            onClick={onAddMovie}
             sx={{
               flex: 1,
               backgroundColor: "#63c568",
@@ -90,7 +91,10 @@ function MovieCard() {
                 textTransform: "uppercase",
                 letterSpacing: "0.5px",
                 color: activeTab === "about" ? "#29abe2" : "#888",
-                borderBottom: activeTab === "about" ? "3px solid #29abe2" : "3px solid transparent",
+                borderBottom:
+                  activeTab === "about"
+                    ? "3px solid #29abe2"
+                    : "3px solid transparent",
                 pb: 1,
                 cursor: "pointer",
                 transition: "all 0.2s ease",
@@ -107,7 +111,10 @@ function MovieCard() {
                 textTransform: "uppercase",
                 letterSpacing: "0.5px",
                 color: activeTab === "trailer" ? "#29abe2" : "#888",
-                borderBottom: activeTab === "trailer" ? "3px solid #29abe2" : "3px solid transparent",
+                borderBottom:
+                  activeTab === "trailer"
+                    ? "3px solid #29abe2"
+                    : "3px solid transparent",
                 pb: 1,
                 cursor: "pointer",
                 transition: "all 0.2s ease",
@@ -184,7 +191,9 @@ function MovieCard() {
                   Morgan Freeman
                 </span>
                 ,{" "}
-                <span style={{ borderBottom: "1px dashed #fff" }}>Tim Robbins</span>
+                <span style={{ borderBottom: "1px dashed #fff" }}>
+                  Tim Robbins
+                </span>
                 ,{" "}
                 <span style={{ borderBottom: "1px dashed #fff" }}>
                   William Sadler
@@ -197,23 +206,24 @@ function MovieCard() {
                   lineHeight: 1.6,
                   textAlign: "justify",
                   color: "#e0e0e0",
-                  whiteSpace: "normal", 
-                  overflow: "visible",  
+                  whiteSpace: "normal",
+                  overflow: "visible",
                 }}
               >
                 In early 1947, Portland, Maine banker Andy Dufresne arrives at
-                Shawshank State Prison to serve two consecutive life sentences for
-                murdering his wife and her lover. He is befriended by Ellis "Red"
-                Redding, a contraband smuggler serving a life sentence, who procures
-                a rock hammer and a large poster of Rita Hayworth for Andy. Assigned
-                to work in the prison laundry, Andy is frequently raped by "the
-                Sisters" prison gang and their leader, Bogs Diamond. In 1949, Andy
-                overhears the captain of the guard complaining about being taxed on
-                an inheritance and helps him legally shelter the money. After being
-                nearly beaten to death by Bogs, Andy is reassigned to the prison library
-                to assist elderly inmate Brooks Hatlen, a pretext to manage financial
-                matters for other prison staff, guards from other prisons, and the
-                warden himself.
+                Shawshank State Prison to serve two consecutive life sentences
+                for murdering his wife and her lover. He is befriended by Ellis
+                "Red" Redding, a contraband smuggler serving a life sentence,
+                who procures a rock hammer and a large poster of Rita Hayworth
+                for Andy. Assigned to work in the prison laundry, Andy is
+                frequently raped by "the Sisters" prison gang and their leader,
+                Bogs Diamond. In 1949, Andy overhears the captain of the guard
+                complaining about being taxed on an inheritance and helps him
+                legally shelter the money. After being nearly beaten to death by
+                Bogs, Andy is reassigned to the prison library to assist elderly
+                inmate Brooks Hatlen, a pretext to manage financial matters for
+                other prison staff, guards from other prisons, and the warden
+                himself.
               </Typography>
             </Box>
           </Box>
@@ -224,7 +234,7 @@ function MovieCard() {
             sx={{
               position: "relative",
               width: "100%",
-              paddingTop: "56.25%", 
+              paddingTop: "56.25%",
               backgroundColor: "#000",
               borderRadius: "4px",
               overflow: "hidden",
@@ -232,7 +242,7 @@ function MovieCard() {
           >
             <Box
               component="iframe"
-              src="https://youtu.be/NmzuHjWmXOc?si=51QQwZfdTk4n1P11" 
+              src="https://www.youtube.com/embed/NmzuHjWmXOc"
               title="Movie Trailer"
               frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -254,7 +264,6 @@ function MovieCard() {
 }
 
 export default MovieCard;
-
 
 
 

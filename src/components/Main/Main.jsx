@@ -1,4 +1,5 @@
 import { useState } from "react";
+
 import Box from "@mui/material/Box";
 import Drawer from "@mui/material/Drawer";
 import List from "@mui/material/List";
@@ -15,12 +16,30 @@ import BusinessOutlinedIcon from "@mui/icons-material/BusinessOutlined";
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 
 const menuItems = [
-  { label: "Home", icon: <HomeOutlinedIcon /> },
-  { label: "Movies", icon: <MovieOutlinedIcon /> },
-  { label: "Actors", icon: <PeopleAltOutlinedIcon /> },
-  { label: "Directors", icon: <PersonOutlineOutlinedIcon /> },
-  { label: "Studios", icon: <BusinessOutlinedIcon /> },
-  { label: "Service", icon: <SettingsOutlinedIcon /> },
+  {
+    label: "Home",
+    icon: <HomeOutlinedIcon />,
+  },
+  {
+    label: "Movies",
+    icon: <MovieOutlinedIcon />,
+  },
+  {
+    label: "Actors",
+    icon: <PeopleAltOutlinedIcon />,
+  },
+  {
+    label: "Directors",
+    icon: <PersonOutlineOutlinedIcon />,
+  },
+  {
+    label: "Studios",
+    icon: <BusinessOutlinedIcon />,
+  },
+  {
+    label: "Service",
+    icon: <SettingsOutlinedIcon />,
+  },
 ];
 
 export default function Main({ children }) {
@@ -35,6 +54,7 @@ export default function Main({ children }) {
         backgroundColor: "#3d3d3d",
       }}
     >
+      {/* SIDEBAR */}
       <Drawer
         variant="permanent"
         anchor="left"
@@ -42,45 +62,66 @@ export default function Main({ children }) {
           width: 240,
           flexShrink: 0,
           marginLeft: "15px",
+
           "& .MuiDrawer-paper": {
             position: "sticky",
             width: 240,
+
             backgroundColor: "#2d2d2d",
             color: "#fff",
+
             borderRight: "none",
             boxSizing: "border-box",
-            top: "115px", 
+
+            top: "115px",
             height: "auto",
+
             boxShadow: "none",
             borderRadius: 2,
           },
         }}
       >
-        <List disablePadding sx={{ pt: 1 }}>
+        <List
+          disablePadding
+          sx={{
+            pt: 1,
+          }}
+        >
           {menuItems.map(({ label, icon }) => {
             const isSelected = selected === label;
 
             return (
-              <ListItem key={label} disablePadding>
+              <ListItem
+                key={label}
+                disablePadding
+              >
                 <ListItemButton
                   selected={isSelected}
                   onClick={() => setSelected(label)}
                   sx={{
                     px: 2.5,
                     py: 1.35,
+
                     color: "#fff",
+
                     "&.Mui-selected": {
-                      backgroundColor: "rgba(13, 13, 13, 0.69)",
+                      backgroundColor:
+                        "rgba(13, 13, 13, 0.69)",
                     },
+
                     "&:hover": {
-                      backgroundColor: "rgba(255,255,255,0.04)",
+                      backgroundColor:
+                        "rgba(255,255,255,0.04)",
                     },
                   }}
                 >
                   <ListItemIcon
                     sx={{
                       minWidth: 40,
-                      color: isSelected ? "#ffffff" : "#d8d8d8",
+
+                      color: isSelected
+                        ? "#ffffff"
+                        : "#d8d8d8",
                     }}
                   >
                     {icon}
@@ -101,12 +142,15 @@ export default function Main({ children }) {
         </List>
       </Drawer>
 
-      <Box 
-        sx={{ 
-          flexGrow: 1, 
-          padding: "0 20px 20px 20px", 
+      {/* CONTENT */}
+      <Box
+        sx={{
+          flexGrow: 1,
           minWidth: 0,
-          height: "fit-content" 
+
+          padding: "80px 20px 20px 20px",
+
+          height: "fit-content",
         }}
       >
         {children}
